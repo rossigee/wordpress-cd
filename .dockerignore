@@ -1,0 +1,5 @@
+.git
+.gitlab-ci.yml
+.gitignore
+*-env
+*.egg-info
