@@ -11,7 +11,7 @@ def _driver(args):
     try:
         drivers_to_load = os.environ["WPCD_DRIVERS"]
     except KeyError:
-        drivers_to_load = "wordpress_cd.drivers.sftp"
+        drivers_to_load = "wordpress_cd.drivers.rsync"
     for modulename in drivers_to_load.split(","):
         _logger.debug("Importing module '%s'" % modulename)
         try:
@@ -22,6 +22,9 @@ def _driver(args):
     # Find the driver registered for this platform
     try:
         platform = os.environ['WPCD_PLATFORM']
+    except KeyError:
+        platform = "rsync"
+    try:
         driver = drivers.drivers[platform]
     except KeyError as e:
         _logger.error("Missing driver for platform '{0}'.".format(platform))
