@@ -7,3 +7,9 @@ docker build -t rossigee/wordpress-cd .
 docker push rossigee/wordpress-cd
 ```
 
+# Distributing new version
+
+```
+twine upload dist/*.gz
+```
+
