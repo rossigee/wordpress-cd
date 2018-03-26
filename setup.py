@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name = 'wordpress_cd',
-    version = '0.1.0',
+    version = '0.1.1',
     description = 'Helper scripts to assist with WordPress-related CI/CD and devops tasks (i.e. build/test/deploy workflows for use with GitLab/Jenkins etc)',
     author = 'Ross Golder',
     author_email = 'ross@golder.org',

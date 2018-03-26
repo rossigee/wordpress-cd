@@ -29,16 +29,16 @@ class BaseDriver(object):
             self.target = os.environ['WPCD_JOB_NAME']
             self.job_id = os.environ['WPCD_JOB_ID']
 
-    def deploy_theme(self, module_id):
-        self._deploy_module("theme", module_id)
+    def deploy_theme(self):
+        self._deploy_module("theme")
 
-    def deploy_plugin(self, module_id):
-        self._deploy_module("plugin", module_id)
+    def deploy_plugin(self):
+        self._deploy_module("plugin")
 
-    def deploy_mu_plugin(self, module_id):
-        self._deploy_module("mu_plugin", module_id)
+    def deploy_mu_plugin(self):
+        self._deploy_module("mu_plugin")
 
-    def _deploy_module(self, type, module_id):
+    def _deploy_module(self, type):
         raise NotImplementedError()
 
     def deploy_host(self):
