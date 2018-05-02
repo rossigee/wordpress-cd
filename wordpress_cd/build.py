@@ -38,6 +38,7 @@ def _build_module(module_type):
     exitcode = subprocess.call([
         "tar", "cf", tar_file, ".",
         "--exclude=Jenkinsfile",
+        "--exclude=package-lock.json",
         "--exclude=.git*",
         "--exclude=*-env",
     ])
