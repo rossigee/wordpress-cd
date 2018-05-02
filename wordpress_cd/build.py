@@ -73,7 +73,8 @@ def _build_module(module_type):
     _logger.info("Zipping up build folder...")
     zip_file = "{0}/{1}.zip".format(get_artefact_dir(work_dir), module_id)
     os.chdir(tmp_dir)
-    exitcode = subprocess.call(["zip", "-qr", zip_file, module_id, "--exclude", "node_modules"])
+    exitcode = subprocess.call(["zip", "-r", zip_file, module_id,
+        "-x", "*/node_modules/*"])
     if exitcode > 0:
         _logger.error("Unable to move {0} into place. Exit code: {1}".format(type, exitcode))
         return exitcode
