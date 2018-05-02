@@ -45,7 +45,6 @@ class RsyncDriver(BaseDriver):
         deployargs = [
             "rsync", "-r",
             "-e", self._get_rsync_rsh(),
-            "--exclude=build",
             "--exclude=.git*",
             "--delete",
             ".", "{0}@{1}:{2}".format(self.ssh_user, self.ssh_host, pluginroot)

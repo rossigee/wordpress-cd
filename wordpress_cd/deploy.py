@@ -35,12 +35,12 @@ def _driver(args):
 
 def deploy_plugin(args):
     driver = _driver(args)
-    _logger.info("Deploying plugin using {0} driver...".format(driver))
+    _logger.info("Deploying '{0}' plugin using {1} driver...".format(driver.get_module_name(), driver))
     return driver.deploy_plugin()
 
 def deploy_theme(args):
     driver = _driver(args)
-    _logger.info("Deploying theme using {0} driver...".format(driver))
+    _logger.info("Deploying '{0}' theme using {1} driver...".format(driver.get_module_name(), driver))
     return driver.deploy_theme()
 
 def deploy_site(args):

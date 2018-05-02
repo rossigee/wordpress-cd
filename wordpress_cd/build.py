@@ -24,6 +24,13 @@ def _build_module(module_type):
     work_dir = os.getcwd()
     tmp_dir = tempfile.mkdtemp()
 
+    # Clear down artefact folder
+    _logger.info("Clearing down artefact folder...")
+    artefact_dir = get_artefact_dir(work_dir)
+    if os.path.isdir(artefact_dir):
+        shutil.rmtree(artefact_dir)
+    os.makedirs(artefact_dir)
+
     # Copy everything to be deployed into a folder in the tmpdir
     # (uses tar to leverage exclude patterns)
     _logger.info("Deploying copy to temporary build folder...")
@@ -32,41 +39,57 @@ def _build_module(module_type):
         "tar", "cf", tar_file, ".",
         "--exclude=Jenkinsfile",
         "--exclude=.git*",
-        "--exclude=build",
         "--exclude=*-env",
     ])
     if exitcode > 0:
-        _logger.error("Unable to create build tarball. Exit code: {1}".format(exitcode))
+        _logger.error("Unable to create tar file for build copy. Exit code: {1}".format(exitcode))
         return exitcode
     tmp_build_dir = "{0}/{1}".format(tmp_dir, module_id)
     os.makedirs(tmp_build_dir)
     os.chdir(tmp_build_dir)
     exitcode = subprocess.call(["tar", "xf", tar_file])
     if exitcode > 0:
-        _logger.error("Unable to extract build tarball into place. Exit code: {1}".format(exitcode))
+        _logger.error("Unable to extract files from tar file into place. Exit code: {1}".format(exitcode))
         return exitcode
     os.unlink(tar_file)
 
-    # Clear down old build directory
-    build_dir = "{0}/build".format(work_dir)
-    if os.path.isdir(build_dir):
-        shutil.rmtree(build_dir)
-    os.makedirs(build_dir)
-    os.chdir(build_dir)
+    # If there is a 'package.json' present, run 'npm install'
+    if os.path.isfile("{0}/package.json".format(tmp_build_dir)):
+        _logger.info("Found 'package.json', running 'npm install'...")
+        exitcode = subprocess.call(["npm", "install"])
+        if exitcode > 0:
+            _logger.error("Unable to install NodeJS packages. Exit code: {1}".format(exitcode))
+            return exitcode
+
+    # If there is a '.scss' file present, run 'gulp'
+    if os.path.isfile("{0}/gulpfile.js".format(tmp_build_dir)):
+        _logger.info("Found 'gulpfile.js', running 'gulp'...")
+        exitcode = subprocess.call(["gulp"])
+        if exitcode > 0:
+            _logger.error("Unable to generate CSS/JS. Exit code: {1}".format(exitcode))
+            return exitcode
 
     # Zip it on up
     _logger.info("Zipping up build folder...")
-    zip_file = "{0}/{1}.zip".format(build_dir, module_id)
+    zip_file = "{0}/{1}.zip".format(get_artefact_dir(work_dir), module_id)
     os.chdir(tmp_dir)
-    exitcode = subprocess.call(["zip", "-r", zip_file, module_id])
+    exitcode = subprocess.call(["zip", "-qr", zip_file, module_id, "--exclude", "node_modules"])
     if exitcode > 0:
         _logger.error("Unable to move {0} into place. Exit code: {1}".format(type, exitcode))
         return exitcode
 
     # Clear down temporary file amd folder
+    os.chdir(work_dir)
     shutil.rmtree(tmp_dir)
 
     _logger.info("Done")
+
+def get_artefact_dir(work_dir):
+    # Determine where we're going to place the resulting ZIP file
+    try:
+        return "{0}/{1}".format(work_dir, os.environ['WPCD_ARTEFACT_DIR'])
+    except KeyError:
+        return "{0}/wpcd-artefacts".format(work_dir)
 
 def build_plugin(args):
     return _build_module("plugin")

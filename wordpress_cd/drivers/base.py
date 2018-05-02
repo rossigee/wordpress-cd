@@ -29,6 +29,12 @@ class BaseDriver(object):
             self.target = os.environ['WPCD_JOB_NAME']
             self.job_id = os.environ['WPCD_JOB_ID']
 
+    def get_site_name(self):
+        return os.path.basename(os.getcwd())
+
+    def get_module_name(self):
+        return os.path.basename(os.getcwd())
+
     def deploy_theme(self):
         self._deploy_module("theme")
 
