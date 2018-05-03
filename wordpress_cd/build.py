@@ -71,8 +71,8 @@ def _build_module(module_type):
             return exitcode
 
     # Zip it on up
-    _logger.info("Zipping up build folder...")
     zip_file = "{0}/{1}.zip".format(get_artefact_dir(work_dir), module_id)
+    _logger.info("Zipping up build folder to '{0}'...".format(zip_file))
     os.chdir(tmp_dir)
     exitcode = subprocess.call(["zip", "-r", zip_file, module_id,
         "-x", "*/node_modules/*"])
