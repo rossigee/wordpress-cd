@@ -70,7 +70,7 @@ def unpack_artefact():
     exitcode = subprocess.call(unpackargs)
     _logger.debug("unzip exitcode: {0}".format(exitcode))
     if exitcode != 0:
-        logger.error("Unable to unpack build artefact. Exit code: {0}".format(exitcode))
+        _logger.error("Unable to unpack build artefact. Exit code: {0}".format(exitcode))
         return exitcode
 
     return tmp_dir
