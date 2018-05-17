@@ -27,9 +27,6 @@ def usage():
 
 
 def main():
-    # Make doubly sure temp files aren't world-viewable
-    os.umask(077)
-
     # Determine what mode we're running in based on the command line wrapper
     # that was invoked
     command_run = os.path.basename(sys.argv[0])
