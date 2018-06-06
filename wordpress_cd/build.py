@@ -214,6 +214,17 @@ def build_site(args):
             if exitcode > 0:
                 return exitcode
 
+        # Adding must-use plugin autoloader
+        # (see https://codex.wordpress.org/Must_Use_Plugins)
+        _logger.info("Deploying must-use plugin autoloader to temporary build folder...")
+        src_file = "{0}/extras/mu-autoloader.php".format(sys.prefix)
+        dst_file = "{0}/wordpress/wp-content/mu-plugins/mu-autoloader.php".format(build_dir)
+        try:
+            shutil.copyfile(src_file, dst_file)
+        except IOError as e:
+            _logger.error("Unable to copy must-use plugin autoloader into place: {0}".format(str(e)))
+            return exitcode
+
     # Download and deploy listed plugins
     if 'plugins' in config:
         _logger.info("Building WordPress plugins...")

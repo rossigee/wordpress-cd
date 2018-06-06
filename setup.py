@@ -10,6 +10,9 @@ setup(name = 'wordpress-cd',
       'wordpress_cd',
       'wordpress_cd.drivers',
     ],
+    data_files = [
+      ('extras', ['extras/mu-autoloader.php'])
+    ],
     entry_points = {
         'console_scripts': [
             'build-wp-site = wordpress_cd.main:main',
