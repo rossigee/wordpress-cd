@@ -7,7 +7,7 @@ RUN apk -U add \
 
 # Install the CI scripts
 ADD dist /dist
-RUN pip install /dist/wordpress-cd-0.2.4.tar.gz
+RUN pip install /dist/wordpress-cd-0.2.5.tar.gz
 
 # Source to be built should be mounted here
 WORKDIR /src
