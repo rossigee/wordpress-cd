@@ -59,6 +59,10 @@ plugins:
   - https://downloads.wordpress.org/plugin/acme-wp-plugin.zip
   - https://downloads.wordpress.org/plugin/another-plugin.zip
 
+# Extra plugins to be installed when branch being deployed begins with 'develop'
+development-plugins:
+  - https://downloads.wordpress.org/plugin/debug-tools.zip
+
 # Optional: To put a specific favicon.ico file into place
 favicon:
   file: favicon.ico

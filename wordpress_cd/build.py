@@ -86,12 +86,16 @@ def _build_module(module_type):
 
     _logger.info("Done")
 
-def get_artefact_dir(work_dir):
-    # Determine where we're going to place the resulting ZIP file
-    try:
-        return "{0}/{1}".format(work_dir, os.environ['WPCD_ARTEFACT_DIR'])
-    except KeyError:
-        return "{0}/wpcd-artefacts".format(work_dir)
+def get_branch():
+    if 'GITLAB_CI' in os.environ:
+        _logger.debug("Detected GitLab CI")
+        return os.environ['CI_COMMIT_REF_NAME']
+    elif 'JENKINS_URL' in os.environ:
+        _logger.debug("Detected Jenkins CI")
+        return os.environ['GIT_BRANCH']
+
+def is_develop_branch():
+    return get_branch()[:7] == "develop"
 
 def build_plugin(args):
     return _build_module("plugin")
@@ -230,6 +234,15 @@ def build_site(args):
         _logger.info("Building WordPress plugins...")
         plugins_dir = "{0}/wordpress/wp-content/plugins".format(build_dir)
         for plugin in config['plugins']:
+            exitcode = install_plugin(plugin, plugins_dir)
+            if exitcode > 0:
+                return exitcode
+
+    # Download and deploy listed development plugins if on develop branch
+    if 'development-plugins' in config and is_develop_branch():
+        _logger.info("Building WordPress development plugins...")
+        plugins_dir = "{0}/wordpress/wp-content/plugins".format(build_dir)
+        for plugin in config['development-plugins']:
             exitcode = install_plugin(plugin, plugins_dir)
             if exitcode > 0:
                 return exitcode
