@@ -90,7 +90,7 @@ def get_branch():
     if 'GITLAB_CI' in os.environ:
         _logger.debug("Detected GitLab CI")
         return os.environ['CI_COMMIT_REF_NAME']
-    elif 'JENKINS_URL' in os.environ:
+    elif 'GIT_BRANCH' in os.environ:
         _logger.debug("Detected Jenkins CI")
         return os.environ['GIT_BRANCH']
 
