@@ -86,6 +86,13 @@ def _build_module(module_type):
 
     _logger.info("Done")
 
+def get_artefact_dir(work_dir):
+    # Determine where we're going to place the resulting ZIP file
+    try:
+        return "{0}/{1}".format(work_dir, os.environ['WPCD_ARTEFACT_DIR'])
+    except KeyError:
+        return "{0}/wpcd-artefacts".format(work_dir)
+
 def get_branch():
     if 'GITLAB_CI' in os.environ:
         _logger.debug("Detected GitLab CI")
