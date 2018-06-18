@@ -122,11 +122,14 @@ def install_core(config, build_dir):
         _logger.error("Unable to download Wordpress. Exit code: {0}".format(exitcode))
         return exitcode
 
-    # Unpack core
+    # Unpack core, except for default themes and plugins
     _logger.info("Unpacking WordPress core '{0}'...".format(filename))
     os.chdir(build_dir)
     zipfilename = "/tmp/{0}".format(os.path.basename(core_url))
-    exitcode = subprocess.call(["tar", "-xzf", zipfilename])
+    exitcode = subprocess.call(["tar", "-xzf", zipfilename,
+        "--exclude=wordpress/wp-content/plugins/*",
+        "--exclude=wordpress/wp-content/themes/*"
+    ])
     if exitcode > 0:
         _logger.error("Unable to unpack Wordpress. Exit code: {0}".format(exitcode))
         return exitcode
