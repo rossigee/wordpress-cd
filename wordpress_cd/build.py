@@ -117,7 +117,7 @@ def install_core(config, build_dir):
     core_url = config['core']['url']
     filename = os.path.basename(core_url)
     _logger.info("Fetching WordPress core from '{0}'...".format(core_url))
-    exitcode = subprocess.call(["curl", "-s", "-o", filename, core_url])
+    exitcode = subprocess.call(["curl", "--retry", "3", "-sSL", "-o", filename, core_url])
     if exitcode > 0:
         _logger.error("Unable to download Wordpress. Exit code: {0}".format(exitcode))
         return exitcode
@@ -144,7 +144,7 @@ def _install_thing(url, type, dest_dir):
     zipfilename = "/tmp/{0}".format(os.path.basename(url))
     name = os.path.basename(url).replace(".zip", "")
     _logger.info("Fetching WordPress {0} '{1}' from '{2}'...".format(type, name, url))
-    exitcode = subprocess.call(["curl", "-sSL", "-o", zipfilename, url])
+    exitcode = subprocess.call(["curl", "--retry", "3", "-sSL", "-o", zipfilename, url])
     if exitcode > 0:
         _logger.error("Unable to download {0}. Exit code: {1}".format(type, exitcode))
         return exitcode
