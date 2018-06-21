@@ -66,6 +66,7 @@ class RsyncDriver(BaseDriver):
         _logging.info("Deploying branch '{0}' to  host '{1}' (job id: {2})...".format(self.git_branch, self.ssh_host, self.job_id))
 
         # Sync new site into place, leaving config/content in place
+        work_dir = os.getcwd()
         os.chdir("build/wordpress")
         deployargs = [
             "rsync", "-r",
@@ -90,4 +91,5 @@ class RsyncDriver(BaseDriver):
 
         # Done
         _logging.info("Deployment of branch '{0}' to  host '{1}' successful (job id: {2})...".format(self.git_branch, self.ssh_host, self.job_id))
+        os.chdir(work_dir)
         return 0
