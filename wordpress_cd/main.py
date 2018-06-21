@@ -7,8 +7,12 @@ import time
 import argparse
 
 import logging
-_logger = logging.getLogger(__name__)
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S')
 
+_logger = logging.getLogger(__name__)
 
 def usage():
     print "Usage:"
