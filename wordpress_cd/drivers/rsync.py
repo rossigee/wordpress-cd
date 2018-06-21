@@ -74,7 +74,6 @@ class RsyncDriver(BaseDriver):
             "--exclude=wp-config.php",
             "--exclude=wp-salt.php",
             "--exclude=wp-content/uploads",
-            "--exclude=.htaccess",
             "--delete",
             "--protocol=28",
             ".", "{0}@{1}:{2}".format(self.ssh_user, self.ssh_host, self.ssh_path)

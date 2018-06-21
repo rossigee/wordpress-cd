@@ -268,6 +268,17 @@ def build_site(args):
             _logger.error("Unable to copy 'favicon.ico' into place: {0}".format(str(e)))
             return exitcode
 
+    # If there is a '.htaccess' file in the local folder, deploy that too
+    if os.path.isfile(".htaccess"):
+        _logger.info("Deploying custom '.htaccess' file to temporary build folder...")
+        src_file = ".htaccess"
+        dst_file = "{0}/wordpress/.htaccess".format(build_dir)
+        try:
+            shutil.copyfile(src_file, dst_file)
+        except IOError as e:
+            _logger.error("Unable to copy '.htaccess' into place: {0}".format(str(e)))
+            return exitcode
+
     # Set our file/directory permissions to be readable, to avoid perms issues later
     _logger.info("Resetting file/directory permissions in build folder...")
     for root, dirs, files in os.walk(build_dir):
