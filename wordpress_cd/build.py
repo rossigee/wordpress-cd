@@ -201,6 +201,7 @@ def build_site(args):
     build_dir = "{0}/build".format(os.getcwd())
     if os.path.isdir(build_dir):
         shutil.rmtree(build_dir)
+    work_dir = os.getcwd()
     os.makedirs(build_dir)
     os.chdir(build_dir)
 
@@ -269,6 +270,7 @@ def build_site(args):
             return exitcode
 
     # If there is a '.htaccess' file in the local folder, deploy that too
+    os.chdir(work_dir)
     if os.path.isfile(".htaccess"):
         _logger.info("Deploying custom '.htaccess' file to temporary build folder...")
         src_file = ".htaccess"
