@@ -2,6 +2,12 @@ import os
 import logging
 _logger = logging.getLogger(__name__)
 
+import random, string
+
+def randomword(length):
+   letters = string.ascii_lowercase
+   return ''.join(random.choice(letters) for i in range(length))
+
 
 # Abstract superclass for deployment drivers
 class BaseDriver(object):
@@ -29,6 +35,9 @@ class BaseDriver(object):
             self.target = os.environ['WPCD_JOB_NAME']
             self.job_id = os.environ['WPCD_JOB_ID']
 
+        # For test stage, select a random uid to use in hostname
+        self.test_site_uid = randomword(10)
+
     def get_site_name(self):
         return os.path.basename(os.getcwd())
 
@@ -47,5 +56,12 @@ class BaseDriver(object):
     def _deploy_module(self, type):
         raise NotImplementedError()
 
-    def deploy_host(self):
+    def test_site(self):
         raise NotImplementedError()
+
+    def deploy_site(self):
+        raise NotImplementedError()
+
+    def deploy_host(self):
+        _logger.warn("Use of 'deploy_host' deprecated. Use 'deploy_site' instead.")
+        self.deploy_site()
