@@ -134,9 +134,10 @@ def install_core(config, build_dir):
         _logger.error("Unable to unpack Wordpress. Exit code: {0}".format(exitcode))
         return exitcode
 
-    # Themes/plugins folders are now missing. Create empty ones.
-    os.mkdir('wordpress/wp-content/plugins')
-    os.mkdir('wordpress/wp-content/themes')
+    # If themes/plugins folders are now missing, create empty ones.
+    for dir in ['plugins', 'themes']:
+        if not os.path.isdir('wordpress/wp-content/' + dir):
+            os.mkdir('wordpress/wp-content/' + dir)
 
     # Clear down temporary file
     os.unlink(zipfilename)
