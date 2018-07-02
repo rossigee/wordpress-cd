@@ -7,11 +7,6 @@ import time
 import argparse
 
 import logging
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S')
-
 _logger = logging.getLogger(__name__)
 
 def usage():
@@ -46,9 +41,13 @@ def main():
 
     # Enable logging if verbosity requested
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
+        log_level = logging.DEBUG
     elif args.verbose:
-        logging.basicConfig(level=logging.INFO)
+        log_level = logging.INFO
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level=log_level,
+        datefmt='%Y-%m-%d %H:%M:%S')
 
     # Act according to command run
     if command_run[0:6] == 'build-':
