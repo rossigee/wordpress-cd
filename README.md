@@ -7,12 +7,20 @@ Currently tested with:
 * GitLab
 * Jenkins
 
-I also use the 'build-wp-site' script locally to quickly generate clean builds with certain plugins/themes pre-installed, and use that to kick-start a local development environment.
+They can also be a useful tool for local development. For example, I often use the 'build-wp-site' script locally to quickly generate clean builds with certain plugins/themes pre-installed, and use that to kick-start a local development environment, using the build folder as the document root.
+
+Often, this package is a dependency of a specific platform driver (i.e. Amazon Beanstalk, Azure EKS, Kubernetes, whatever), which is a dependency of an organisational package. Thus, an example inheritence chain would look like:
+
+ * BaseDriver (from this package `'wordpress_cd`)
+ * RancherDriver (from third-party `'wordpress_rancher` package)
+ * AcmeWidgetsRancherDriver (a custom/proprietary package, which will contain organisation-specific extensions/overrides to the common workflow)
+
+For example, the organisation-specific methods might override the setup and teardown methods for the DNS to use an internal nameserver for test hosts. Or include additional files in the '.ebextensions' folder of a Beanstalk application.
 
 
 ## Installing the scripts
 
-Install scripts using `pip`:
+The scripts can be installed using `pip`:
 
 ```
 pip install wordpress-cd
@@ -26,10 +34,39 @@ python setup.py install
 
 Standard stuff. Use 'virtualenv' if you wish.
 
+The end result is that the following command line tools are available:
+
+* `build-wp-site`
+* `test-wp-site`
+* `deploy-wp-site`
+
+Each represents a typical high-level stage in a CI workflow.
+
+Additionally, the following command line tools will be available:
+
+* `build-wp-plugin`
+* `test-wp-plugin`
+* `deploy-wp-plugin`
+* `build-wp-theme`
+* `test-wp-theme`
+* `deploy-wp-theme`
+
+These allow CI workflows for specific themes/plugins to be developed, so a particular theme/plugin can be applied to a given site without having to rebuild and redeploy the whole docroot. It also allows for fresh build of plugins and themes to be deployed in readiness for inclusing in newly built sites.
+
+NOTE: The `test-*` scripts for themes and plugins are just placeholders, as it's not usually practical to do end-to-end regression testing of WP plugins, and I've not come across any plugins that have their own unit tests yet.
+
+### Dockerisation
+
+These scripts can be installed directly on your Jenkins (or other) CI server. However, we find it best to use a custom CI build container that contains `wordpress_cd` plus all the platform drivers we use, plus the command-line tools they depend on (such as 'zip', 'mysql', 'aws' etc.).
+
+TODO: Workflow example.
+
 
 ## Building a WordPress site
 
-First, we define a site configuration by creating a 'config.yml' file.
+First, create a working directory to contain your site configuration and related files.
+
+Within that folder, we define a `config.yml` site configuration file listing the main 'ingredients' we want our document root build to consist of.
 
 A sample 'config.yml' file might look like this:
 
@@ -63,19 +100,125 @@ plugins:
 development-plugins:
   - https://downloads.wordpress.org/plugin/debug-tools.zip
 
-# Optional: To put a specific favicon.ico file into place
-favicon:
-  file: favicon.ico
-
 ```
 
-To build a document root that contains a fresh WordPress instance with those themes and plugins installed:
+To build a document root that contains a fresh WordPress instance with that configuration:
 
 ```bash
 build-wp-site -v
 ```
 
-The resulting document root will now exist in the 'build/wordpress' folder.
+The resulting document root will now exist in the 'build/wordpress' folder. The CI system should consider the 'build' folder an artifact, as it will be expected by the subsequent testing and deployment stages.
+
+TODO: It should probably also ZIP up document root, and provide the ZIP file, last commit message and a checksum value.
+
+
+### URLs in the config file
+
+The main components for the build are retrieved using `curl` as a subprocess. That means only simple 'http' or 'https' links are allowed for now.
+
+TODO: Extend to accept 's3://' URLs for private plugin repositories hosted on the popular storage platform.
+
+TODO: Extend to allow 'envato://' (or other proprietary URL schemes) to allow the latest or specific versions of proprietary plugins or themes to be retrieved directly from their source repositories or vendor packaging system.
+
+
+### Including a 'wp-config.php' file
+
+If there is a `wp-config.php` file present in the current working directory when the `build-wp-site` script is run, it is included in the build.
+
+Typically, it's good practice to include a production-ready version of this config, but with the database settings retrieved from environment variables set by the production host.
+
+```
+define('DB_NAME', getenv("DB_NAME"));
+define('DB_USER', getenv("DB_USER"));
+define('DB_PASSWORD', getenv("DB_PASSWORD"));
+define('DB_HOST', getenv("DB_HOST"));
+```
+
+Some people may prefer not to include a `wp-config.php` file at build time, but instead generate or include specific configs at testing and/or final deployment time.
+
+
+### Including a '.htaccess' file
+
+If there is a `.htaccess` file present in the current working directory when the `build-wp-site` script is run, it is included in the build.
+
+
+### Including a 'favicon.ico' file
+
+If there is a `favicon.ico` file present in the current working directory when the `build-wp-site` script is run, it is included in the build.
+
+
+## Testing the site
+
+In order to 'clean room' test a site, it needs to be set up from scratch with a known set of data, and a series of tests run against the site. If all tests pass, we can proceed to the deployment stage.
+
+As the test stage needs to orchestrate services on different hosting platform providers, it depends on 'drivers' (a.k.a. 'plugins' or 'modules') to perform the actual orchestration of hosting resources and related services.
+
+NOTE: The same `deploy_site` method that deploys the document root to pre-configured transient test environments can also be used by the `deploy` stage to ship the build to a pre-existing production or staging environments. So the same driver is usually used by both the 'test' and 'deploy' CI stages.
+
+
+### Platform drivers
+
+There will be different drivers for different hosting platforms and techniques, which will be maintained seperately as python packages that depend on this one.
+
+A driver will be a subclass of `BaseDriver` that implements the main stages involved in testing a WordPress site:
+
+* `setup` - Running up a VM or virtualhost using the latest build, connecting it to a database containing a fresh snapshot of test data, adding a DNS entry for external access, applying an SSL certificate etc. and generally making a cleanroom instance available at a particular URL.
+* `run_tests` - Invokes one or more internal or external profiling/testing tools against the newly created URL, gathering metrics/statistics/results for later presentation, including an overall pass/failure status.
+* `teardown` - Revoking any generated temporary SSL certificates (if necessary), removing DNS entry, purging test database and releasing any other resources used by the test host.
+
+TODO: Include an example within this package.
+
+The following are existing 'wordress_cd' driver implementations that may serve as a useful reference or base for new ones:
+
+* [wordpress_cd_s3](https://github.com/rossigee/wordpress-cd-s3)
+* [wordpress_cd_rancher](https://github.com/rossigee/wordpress-cd-rancher)
+
+
+### Datasets
+
+During the `setup` stage, drivers will need to obtain the datasets to be used for testing. Typically, there are juts two datasets:
+
+* a gzipped SQL dump of a WordPress instance, and
+* a gzipped tar file containing the sites 'wp-content/uploads' folder.
+
+How organisations prefer to make this data available at runtime will be determined by the 'dataset' class that the driver is configured to use. A 'dataset' is implemented as a `BaseDataSet` subclass.
+
+
+### FileDataSet
+
+If the datasets are to be made available as files to the test script at run-time (i.e. the script is run in the repo root, and the dump files are managed in the repo), then the `FileDateSet` class should be used. It will expect the files to exist in the current working directory, and be named specifically. Otherwise, the following environment variables can be used to override the settings.
+
+Env var | Meaning | Default
+--------|---------|--------
+TEST_DATASET_ROOT | Folder containing test datasets | (working directory at runtime)
+TEST_DATASET_SQL_DUMPFILE | Filename of compressed SQL dump | `test-database.sql.gz`
+TEST_DATASET_UPLOADS_DUMPFILE | Filename of compressed tar of uploads folder | `test-uploads.sql.gz`
+
+
+### HTTPDataSet
+
+If the datasets are to be hosted by an external web service and need to be collected dynamically via HTTP(/S), the `HTTPDataSet` class can be used.
+
+Env var | Meaning | Default
+--------|---------|--------
+TEST_DATASET_SQL_URL | URL to use to collect compressed SQL dump | N/A
+TEST_DATASET_UPLOADS_URL | URL to use to collect compressed tar of uploads folder | N/A
+
+Where the script gets this data from is implemented as a In some cases, these dump files will be available in the directory that the test script is being run as, in  seperate  the same repository/wo
+The 'run_tests'
+
+
+### S3DataSet
+
+If the datasets are to be hosted on an S3 bucket, the `S3DataSet` class can be used.
+
+Env var | Meaning | Default
+--------|---------|--------
+AWS_ACCESS_KEY_ID | AWS credentials to use | N/A
+AWS_SECRET_ACCESS_KEY | AWS credentials to use | N/A
+TEST_DATASET_S3_URL | S3 bucket (and prefix) to retrieve datasets from (e.g. `s3://your-bucket-name/folder1`) | N/A
+
 
 ## Deploying the site
 
