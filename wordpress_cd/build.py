@@ -263,27 +263,36 @@ def build_site(args):
             if exitcode > 0:
                 return exitcode
 
-    # Pop our custom 'favicon.ico' into place (avoids 404s in server logs)
-    if 'favicon' in config:
+    # If there is a 'favicon.ico' file in the local folder, deploy that too
+    # (avoids 404s clogging up the server logs)
+    os.chdir(work_dir)
+    if os.path.isfile("favicon.ico"):
         _logger.info("Deploying custom 'favicon.ico' file to temporary build folder...")
-        src_icofile = config['favicon']['file']
         dst_icofile = "{0}/wordpress/favicon.ico".format(build_dir)
         try:
-            shutil.copyfile(src_icofile, dst_icofile)
+            shutil.copyfile('favicon.ico', dst_icofile)
         except IOError as e:
             _logger.error("Unable to copy 'favicon.ico' into place: {0}".format(str(e)))
             return exitcode
 
     # If there is a '.htaccess' file in the local folder, deploy that too
-    os.chdir(work_dir)
     if os.path.isfile(".htaccess"):
         _logger.info("Deploying custom '.htaccess' file to temporary build folder...")
-        src_file = ".htaccess"
         dst_file = "{0}/wordpress/.htaccess".format(build_dir)
+        try:
+            shutil.copyfile('.htaccess', dst_file)
+        except IOError as e:
+            _logger.error("Unable to copy '.htaccess' into place: {0}".format(str(e)))
+            return exitcode
+
+    # If there is a 'wp-config.php' file in the local folder, deploy that too
+    if os.path.isfile("wp-config.php"):
+        _logger.info("Deploying custom 'wp-config.php' file to temporary build folder...")
+        dst_file = "{0}/wordpress/wp-config.php".format(build_dir)
         try:
             shutil.copyfile(src_file, dst_file)
         except IOError as e:
-            _logger.error("Unable to copy '.htaccess' into place: {0}".format(str(e)))
+            _logger.error("Unable to copy 'wp-config.php' into place: {0}".format(str(e)))
             return exitcode
 
     # Set our file/directory permissions to be readable, to avoid perms issues later
