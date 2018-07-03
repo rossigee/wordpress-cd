@@ -9,6 +9,7 @@ setup(name = 'wordpress-cd',
     packages = [
       'wordpress_cd',
       'wordpress_cd.drivers',
+      'wordpress_cd.datasets',
     ],
     data_files = [
       ('extras', ['extras/mu-autoloader.php'])

@@ -1,4 +1,4 @@
-from wordpress_cd.dataset import BaseDataSet, randomword
+from .base import BaseDataSet, randomword
 
 import boto3
 
