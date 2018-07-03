@@ -4,7 +4,8 @@ _logger = logging.getLogger(__name__)
 import wordpress_cd.drivers as drivers
 from wordpress_cd.build import get_artefact_dir
 
-
+# Defines a default workflow for a 'test' stage, which assumes we will
+# fire up a new site, run tests then tear the test site down...
 def test_site(args):
     driver = drivers.load_driver(args)
     _logger.info("Deploying transient copy of site using {0} driver...".format(driver))

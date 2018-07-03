@@ -11,8 +11,9 @@ def randomword(length):
 
 # Abstract superclass for deployment drivers
 class BaseDriver(object):
-    def __init__(self, args):
+    def __init__(self, args, test_dataset = None):
         self.args = args
+        self.test_dataset = test_dataset
 
         # Which CI-specific envvars to use?
         if 'GITLAB_CI' in os.environ:
@@ -38,6 +39,11 @@ class BaseDriver(object):
         # For test stage, select a random uid to use in hostname
         self.test_site_uid = randomword(10)
 
+        # Flags for setup and teardown of test sites
+        self.is_site_set_up = False
+        self.is_dns_set_up = False
+        self.is_ssl_set_up = False
+
     def get_site_name(self):
         return os.path.basename(os.getcwd())
 
@@ -56,12 +62,103 @@ class BaseDriver(object):
     def _deploy_module(self, type):
         raise NotImplementedError()
 
-    def test_site(self):
-        raise NotImplementedError()
-
     def deploy_site(self):
         raise NotImplementedError()
 
     def deploy_host(self):
         _logger.warn("Use of 'deploy_host' deprecated. Use 'deploy_site' instead.")
         self.deploy_site()
+
+    def test_site(self):
+        raise NotImplementedError()
+
+    def test_site_setup(self):
+        hostname = self._test_sitename()
+        _logger.info("Firing up transient test environment with hostname '{}'".format(hostname))
+
+        # Set up virtualhost, deploy document root and initialise db etc
+        self._setup_host()
+        self.is_site_set_up = True
+
+        # Set up DNS entry
+        self._setup_dns()
+        self.is_dns_set_up = True
+
+        # Configure site to use wildcard certificate
+        self._setup_ssl()
+        self.is_ssl_set_up = True
+
+        # Notification/webhook with details of the test host that has been set up?
+
+        # Schedule site teardown to occur later asynchronously?
+
+    def test_site_run(self):
+        hostname = self._test_sitename()
+        _logger.info("Running test suites against URL: https://{}".format(hostname))
+
+        # TODO: Ensure that at least the homepage is returning an expected response...
+
+        # Intended to be a placefolder for real tests to be run against the host.
+
+    def test_site_teardown(self):
+        hostname = self._test_sitename()
+        _logger.info("Tearing down transient test environment with hostname '{}'".format(hostname))
+
+        # Remove Beanstalk virtualhost and database
+        if self.is_site_set_up:
+            self._teardown_host()
+
+        # Remove DNS entry
+        if self.is_dns_set_up:
+            self._teardown_dns()
+
+        # Revoke SSL certificate (if necessary)
+        if self.is_ssl_set_up:
+            self._teardown_ssl()
+
+        # Notification/webhook with details of the test host that has now been released?
+
+    def _setup_db(self):
+        _logger.info("Creating database and user ('{}')...".format(self.test_dataset.mysql_db))
+        cnx = self._get_db_connection()
+        cursor = cnx.cursor()
+
+        # Create a new database on the RDS server
+        sql = "CREATE DATABASE `{}`".format(
+            self.test_dataset.mysql_db
+        )
+        cursor.execute(sql)
+
+        # Add user with privileges to access this database
+        sql = "GRANT ALL ON `{}`.* TO `{}` IDENTIFIED BY \"{}\"".format(
+            self.test_dataset.mysql_db,
+            self.test_dataset.mysql_user,
+            self.test_dataset.mysql_pass
+        )
+        cursor.execute(sql)
+
+        # Wind down db commection
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+
+    def _teardown_db(self):
+        cnx = self._get_db_connection()
+        cursor = cnx.cursor()
+
+        # Drop DB
+        sql = "DROP DATABASE IF EXISTS `{}`".format(
+            self.test_dataset.mysql_user
+        )
+        cursor.execute(sql)
+
+        # Delete user
+        sql = "DROP USER IF EXISTS `{}`".format(
+            self.test_dataset.mysql_user
+        )
+        cursor.execute(sql)
+
+        # Wind down db commection
+        cnx.commit()
+        cursor.close()
+        cnx.close()
