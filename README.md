@@ -7,15 +7,15 @@ Currently tested with:
 * GitLab
 * Jenkins
 
-They can also be a useful tool for local development. For example, I often use the 'build-wp-site' script locally to quickly generate clean builds with certain plugins/themes pre-installed, and use that to kick-start a local development environment, using the build folder as the document root.
+They can also be a useful tool for local development. For example, I often use the `build-wp-site` script locally to quickly generate clean builds with certain plugins/themes pre-installed, and use that to kick-start a local development environment, using the build folder as the document root.
 
 Often, this package is a dependency of a specific platform driver (i.e. Amazon Beanstalk, Azure EKS, Kubernetes, whatever), which is a dependency of an organisational package. Thus, an example inheritence chain would look like:
 
- * BaseDriver (from this package `'wordpress_cd`)
- * RancherDriver (from third-party `'wordpress_rancher` package)
+ * BaseDriver (from this package `wordpress_cd`)
+ * RancherDriver (from third-party `wordpress_rancher` package)
  * AcmeWidgetsRancherDriver (a custom/proprietary package, which will contain organisation-specific extensions/overrides to the common workflow)
 
-For example, the organisation-specific methods might override the setup and teardown methods for the DNS to use an internal nameserver for test hosts. Or include additional files in the '.ebextensions' folder of a Beanstalk application.
+For example, the organisation-specific methods might override the setup and teardown methods for the DNS to use an internal nameserver for test hosts. Or include additional files in the `.ebextensions` folder of a Beanstalk application.
 
 
 ## Installing the scripts
@@ -32,7 +32,7 @@ Or, if deploying from source:
 python setup.py install
 ```
 
-Standard stuff. Use 'virtualenv' if you wish.
+Standard stuff. Use `virtualenv` if you wish.
 
 The end result is that the following command line tools are available:
 
@@ -57,7 +57,7 @@ NOTE: The `test-*` scripts for themes and plugins are just placeholders, as it's
 
 ### Dockerisation
 
-These scripts can be installed directly on your Jenkins (or other) CI server. However, we find it best to use a custom CI build container that contains `wordpress_cd` plus all the platform drivers we use, plus the command-line tools they depend on (such as 'zip', 'mysql', 'aws' etc.).
+These scripts can be installed directly on your Jenkins (or other) CI server. However, we find it best to use a custom CI build container that contains `wordpress_cd` plus all the platform drivers we use, plus the command-line tools they depend on (such as `zip`, `mysql`, `aws` etc.).
 
 TODO: Workflow example.
 
@@ -68,7 +68,7 @@ First, create a working directory to contain your site configuration and related
 
 Within that folder, we define a `config.yml` site configuration file listing the main 'ingredients' we want our document root build to consist of.
 
-A sample 'config.yml' file might look like this:
+A sample `config.yml` file might look like this:
 
 ```yaml
 # Identifier string that can be used by deployment drivers if required.
@@ -108,7 +108,7 @@ To build a document root that contains a fresh WordPress instance with that conf
 build-wp-site -v
 ```
 
-The resulting document root will now exist in the 'build/wordpress' folder. The CI system should consider the 'build' folder an artifact, as it will be expected by the subsequent testing and deployment stages.
+The resulting document root will now exist in the `build/wordpress` folder. The CI system should consider the `build` folder an artifact, as it will be expected by the subsequent testing and deployment stages.
 
 TODO: It should probably also ZIP up document root, and provide the ZIP file, last commit message and a checksum value.
 
@@ -117,12 +117,12 @@ TODO: It should probably also ZIP up document root, and provide the ZIP file, la
 
 The main components for the build are retrieved using `curl` as a subprocess. That means only simple 'http' or 'https' links are allowed for now.
 
-TODO: Extend to accept 's3://' URLs for private plugin repositories hosted on the popular storage platform.
+TODO: Extend to accept `s3://` URLs for private plugin repositories hosted on the popular storage platform.
 
-TODO: Extend to allow 'envato://' (or other proprietary URL schemes) to allow the latest or specific versions of proprietary plugins or themes to be retrieved directly from their source repositories or vendor packaging system.
+TODO: Extend to allow `envato://` (or other proprietary URL schemes) to allow the latest or specific versions of proprietary plugins or themes to be retrieved directly from their source repositories or vendor packaging system.
 
 
-### Including a 'wp-config.php' file
+### Including a `wp-config.php` file
 
 If there is a `wp-config.php` file present in the current working directory when the `build-wp-site` script is run, it is included in the build.
 
@@ -138,12 +138,12 @@ define('DB_HOST', getenv("DB_HOST"));
 Some people may prefer not to include a `wp-config.php` file at build time, but instead generate or include specific configs at testing and/or final deployment time.
 
 
-### Including a '.htaccess' file
+### Including a `.htaccess` file
 
 If there is a `.htaccess` file present in the current working directory when the `build-wp-site` script is run, it is included in the build.
 
 
-### Including a 'favicon.ico' file
+### Including a `favicon.ico` file
 
 If there is a `favicon.ico` file present in the current working directory when the `build-wp-site` script is run, it is included in the build.
 
@@ -169,7 +169,7 @@ A driver will be a subclass of `BaseDriver` that implements the main stages invo
 
 TODO: Include an example within this package.
 
-The following are existing 'wordress_cd' driver implementations that may serve as a useful reference or base for new ones:
+The following are existing `wordress_cd` driver implementations that may serve as a useful reference or base for new ones:
 
 * [wordpress_cd_s3](https://github.com/rossigee/wordpress-cd-s3)
 * [wordpress_cd_rancher](https://github.com/rossigee/wordpress-cd-rancher)
@@ -180,12 +180,14 @@ The following are existing 'wordress_cd' driver implementations that may serve a
 During the `setup` stage, drivers will need to obtain the datasets to be used for testing. Typically, there are juts two datasets:
 
 * a gzipped SQL dump of a WordPress instance, and
-* a gzipped tar file containing the sites 'wp-content/uploads' folder.
+* a gzipped tar file containing the sites `wp-content/uploads` folder.
 
 How organisations prefer to make this data available at runtime will be determined by the 'dataset' class that the driver is configured to use. A 'dataset' is implemented as a `BaseDataSet` subclass.
 
 
 ### FileDataSet
+
+(NOTE: This dataset is not ready yet)
 
 If the datasets are to be made available as files to the test script at run-time (i.e. the script is run in the repo root, and the dump files are managed in the repo), then the `FileDateSet` class should be used. It will expect the files to exist in the current working directory, and be named specifically. Otherwise, the following environment variables can be used to override the settings.
 
@@ -195,8 +197,12 @@ TEST_DATASET_ROOT | Folder containing test datasets | (working directory at runt
 TEST_DATASET_SQL_DUMPFILE | Filename of compressed SQL dump | `test-database.sql.gz`
 TEST_DATASET_UPLOADS_DUMPFILE | Filename of compressed tar of uploads folder | `test-uploads.sql.gz`
 
+In some cases, these dump files will be available locally, either provided by the CI system, or kept in the repo the script is being run from.
+
 
 ### HTTPDataSet
+
+(NOTE: This dataset is not ready yet)
 
 If the datasets are to be hosted by an external web service and need to be collected dynamically via HTTP(/S), the `HTTPDataSet` class can be used.
 
@@ -205,13 +211,12 @@ Env var | Meaning | Default
 TEST_DATASET_SQL_URL | URL to use to collect compressed SQL dump | N/A
 TEST_DATASET_UPLOADS_URL | URL to use to collect compressed tar of uploads folder | N/A
 
-Where the script gets this data from is implemented as a In some cases, these dump files will be available in the directory that the test script is being run as, in  seperate  the same repository/wo
-The 'run_tests'
-
 
 ### S3DataSet
 
 If the datasets are to be hosted on an S3 bucket, the `S3DataSet` class can be used.
+
+This dataset implementation required the `boto3` library.
 
 Env var | Meaning | Default
 --------|---------|--------
@@ -236,24 +241,38 @@ Env var | Description | Example value
 --------|-------------|--------------
 WPCD_JOB_NAME | Typically the short string name of the project/repo being deployed | `acme-widget`
 WPCD_GIT_BRANCH | Which branch this is a build of, to help determine which environment to deploy to. | `master` (or `develop`)
-WPCD_DRIVERS | Which python modules to import to register the necessary deployment drivers (may load multiple drivers) | `wordpress_cd.drivers.rsync`
-WPCD_PLATFORM | Which driver id to use to perform the deployment | `rsync`
+WPCD_DRIVERS | Which python modules to import to register the necessary deployment drivers (may load multiple drivers, comma-seperated) | `wordpress_cd.drivers.rsync`
+WPCD_PLATFORM | Which driver id to use for testing or deployment | `rsync`
 
 The above are the default environment variables used. The deploy script will attempt to identify which CI system is running and use the environment variables specific to that system if found.
 
 
-### Deployment with rsync
+### The supplied `rsync` driver
 
-This package comes with a simple 'rsync' based deployment driver. The main environment variables you need to set for a typical rsync deployment are:
+This package comes with a simple `rsync` based driver, that implements the deployment methods for modules (plugins and themes) and sites. The main environment variables you need to set for a typical rsync deployment are:
 
 Env var | Description | Example value
 --------|-------------|--------------
 SSH_HOST | Host to rsync to | www.myhost.com
-SSH_PORT |
+SSH_PORT | Port on server to connect to | 22
+SSH_USER | Username to login with | roger
+SSH_PASS | Password to login with | ramjet
+SSH_PATH | Where document root can be found on remote server | `/home/u12345/public_html`
+
+Module deployments will replace the module on the server.
+
+Site deployments will replace the document root on the server, with a few exceptions:
+
+* The `wp-config.php` file, which may contain necessary db credentials/prefixes etc.
+* A `wp-salt.php` file, as this would break some sites which use a seperate salt file (not personally recommended).
+* The `wp-content/uploads` folder, containing the site's media.
+
+Other than those exception, anything else is in the document root that is not also in the build root will be destroyed, so configure with caution and keep backups to hand. If extra files are required (i.e. 'proof-of-domain' flag files etc), they need to be added to the build folder first.
+
 
 ## Using an alternative deployment driver
 
-You can tell the deployment script to import packages containing alternative deployment drivers by listing the modules to import (comma-seperated) in the `WORDPRESS_CD_DRIVERS` environment variable.
+As noted above, you can configure the deployment script to import packages containing alternative deployment drivers by listing the modules to import (comma-seperated) in the `WORDPRESS_CD_DRIVERS` environment variable.
 
 ```bash
 pip install wordpress-cd-rancher
@@ -262,7 +281,7 @@ export WPCD_PLATFORM=rancher
 
 export WORDPRESS_BEANSTALK_APP_ID=foo
 export WORDPRESS_BEANSTALK_ENV_ID=bar
-#...other specific variables/creds...
+#...other platform-specific variables/creds...
 deploy-wp-site -v
 ```
 
@@ -273,9 +292,9 @@ NOTE: the above package is a fictional example. I might implement it one day.
 
 ### GitLab
 
-The deployment script can detect that it is being run in GitLab by the existence of [environment variables]() beginning with 'CI_'.
+The deployment script can detect that it is being run in GitLab by the existence of [environment variables]() beginning with `CI_`.
 
-An example '.gitlab-ci.yml' for a site repository stored on GitLab might look like this:
+An example `.gitlab-ci.yml` for a site repository stored on GitLab might look like this:
 
 ```yaml
 stages:
@@ -289,11 +308,12 @@ before_script:
   - aws s3 sync s3://your-gitlab-ci-bucket/ssh /root/.ssh && chmod 400 /root/.ssh/id_rsa
 ```
 
-The S3 sync command ensures that the latest SSH public/private keys are available to commands being run in the container, without actually distributing those keys in the container image.
+The above example assumes you're using the `rsync` driver, so the S3 sync command ensures that the latest SSH public/private keys are available to without having to distribute those keys in the repo.
+
 
 ### Example workflow for a plugin
 
-The '.gitlab-ci.yml' file might continue like this:
+The `.gitlab-ci.yml` file might continue like this:
 
 ```yaml
 build:
@@ -307,7 +327,7 @@ build:
     - build/*.zip
 ```
 
-This tells Gitlab to use the 'build-wp-plugin' script to package up the code, which will create a ZIP file in the build folder, and to store this ZIP file as an artifact for later reference.
+This tells Gitlab to use the `build-wp-plugin` script to package up the code, which will create a ZIP file in the build folder, and to store this ZIP file as an artifact for later reference.
 
 The following environment variables can be used to adjust the build behaviour.
 
@@ -317,7 +337,7 @@ WPCD_ARTEFACT_DIR | Which subfolder of the source directory to create and use fo
 
 [TODO] There should then be one or more 'test' stages, which will trigger third-party integration, regression, unit test and UI/UX pipelines and process their success/failure responses accordingly.
 
-Once built and tested, the ZIP can then be deployed. The 'deploy-wp-plugin' script derives the target of the deployment from the stage name. The format is roughly:
+Once built and tested, the ZIP can then be deployed. The `deploy-wp-plugin` script derives the target of the deployment from the stage name. The format is roughly:
 
 ```
 deploy:<platform>:<site>:<site>:
@@ -356,7 +376,7 @@ deploy:cloudways:development2:site1:
 
 ## Example for a site configuration repository
 
-The beginning, build and test stages are exactly the same as for plugins, as described above, but using the 'build-wp-site' script instead of the 'build-plugin' script, and collecting the whole build folder as an artifact, instead of just the ZIP file. For example:
+The beginning, build and test stages are exactly the same as for plugins, as described above, but using the `build-wp-site` script instead of the `build-wp-plugin` script, and collecting the whole build folder as an artifact, instead of just the ZIP file. For example:
 
 ```yaml
 build:
@@ -370,7 +390,7 @@ build:
     - build/
 ```
 
-This works by reading a 'config.yml' file from the repo, and using the details provided to fetch a specific version of WordPress plus various public and private artifacts specified and assemble them into the build folder to form a full 'document root' snapshot. A sample 'config.yml' file might look like this:
+This works by reading a `config.yml` file from the repo, and using the details provided to fetch a specific version of WordPress plus various public and private artifacts specified and assemble them into the build folder to form a full 'document root' snapshot. A sample `config.yml` file might look like this:
 
 ```yaml
 id: site1
@@ -393,7 +413,7 @@ plugins:
 
 ```
 
-The deploy stages also work in a similar way to plugins, as described above, but instead of using replacing just the plugin (or theme) on the target host, it uses 'rsync' to sync the latest build into place, ignoring only dynamic areas of the site (i.e. the 'wp-config.php' file, the 'wp-content/uploads' folder etc).
+The deploy stages also work in a similar way to plugins, as described above, but instead of using replacing just the plugin (or theme) on the target host, it uses `rsync` to sync the latest build into place, ignoring only dynamic areas of the site (i.e. the `wp-config.php` file, the `wp-content/uploads` folder etc).
 
 ```yaml
 .deploy:cloudways:development2:site1:
@@ -412,7 +432,7 @@ The deploy stages also work in a similar way to plugins, as described above, but
 
 ## Running locally for development/testing purpose
 
-Create a 'staging-env' file, containing the following...
+Create a `staging-env` file, containing the following...
 
 ```bash
 export CI_DRIVERS=cloudways
@@ -456,7 +476,7 @@ You should now be able to run the theme tools from a theme repository, plugin to
 
 ## Building and deploying a theme or plugin
 
-Replace 'theme' with 'plugin' as necessary in the following examples.
+Replace `theme` with `plugin` as necessary in the following examples.
 
 ```bash
 cd ~/workshop/themes/yourtheme
@@ -476,9 +496,9 @@ build-wp-plugin
 deploy-wp-plugin
 ```
 
-The build stage checks for the presence of 'package.json' file and runs 'npm install' if found.
+The build stage checks for the presence of `package.json` file and runs `npm install` if found.
 
-It also checks for a 'gulpfile.js', and runs 'gulp' if found. This presumes a default gulp target has been specified.
+It also checks for a `gulpfile.js`, and runs `gulp` if found. This presumes a default gulp target has been specified.
 
 
 ## Building and deploying a site template
