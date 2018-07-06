@@ -38,14 +38,14 @@ class BaseDriver(object):
 
         # For test stage, select a random uid to use in hostname
         self.test_site_uid = randomword(10)
+        self.test_site_domain = os.getenv("WPCD_TEST_DOMAIN", "test.yourdomain.com")
+        self.test_site_fqdn = "wpcd-{}.{}".format(self.test_site_uid, self.test_site_domain)
+        self.test_site_url = "https://" + self.test_site_fqdn
 
         # Flags for setup and teardown of test sites
         self.is_site_set_up = False
         self.is_dns_set_up = False
         self.is_ssl_set_up = False
-
-    def get_site_name(self):
-        return os.path.basename(os.getcwd())
 
     def get_module_name(self):
         return os.path.basename(os.getcwd())
@@ -73,8 +73,7 @@ class BaseDriver(object):
         raise NotImplementedError()
 
     def test_site_setup(self):
-        hostname = self._test_sitename()
-        _logger.info("Firing up transient test environment with hostname '{}'".format(hostname))
+        _logger.info("Firing up transient test environment with hostname '{}'".format(self.test_site_fqdn))
 
         # Set up virtualhost, deploy document root and initialise db etc
         self._setup_host()
@@ -93,16 +92,14 @@ class BaseDriver(object):
         # Schedule site teardown to occur later asynchronously?
 
     def test_site_run(self):
-        hostname = self._test_sitename()
-        _logger.info("Running test suites against URL: https://{}".format(hostname))
+        _logger.info("Running test suites against URL: {}".format(self.test_site_url))
 
         # TODO: Ensure that at least the homepage is returning an expected response...
 
         # Intended to be a placefolder for real tests to be run against the host.
 
     def test_site_teardown(self):
-        hostname = self._test_sitename()
-        _logger.info("Tearing down transient test environment with hostname '{}'".format(hostname))
+        _logger.info("Tearing down transient test environment with hostname '{}'".format(self.test_site_fqdn))
 
         # Remove Beanstalk virtualhost and database
         if self.is_site_set_up:
