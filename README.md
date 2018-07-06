@@ -2,20 +2,39 @@
 
 These scripts are designed to be called as part of the post-commit hook in Git repositories.
 
-Currently tested with:
+Typically, a development team working on a WordPress project need to :
 
-* GitLab
-* Jenkins
+* `build` a document root containing WordPress, a set of themes and plugins and various other files (config file, htaccess, favicon etc).
+* `test` the built document root using a predetermined set of test data to ensure that the resulting website works as expected and no regressions have been introduced, using transient hosts on a test platform
+* `deploy` the new build as a new 'version' to one or more hosts on the organisations main production platform
 
-They can also be a useful tool for local development. For example, I often use the `build-wp-site` script locally to quickly generate clean builds with certain plugins/themes pre-installed, and use that to kick-start a local development environment, using the build folder as the document root.
+The build stage is fairly simple, as it just involves downloading a bunch of resources and arranging them into a 'document root' folder. This can be achieved be defining the themes and plugins to be assembled in a simple `config.yml` file.
 
-Often, this package is a dependency of a specific platform driver (i.e. Amazon Beanstalk, Azure EKS, Kubernetes, whatever), which is a dependency of an organisational package. Thus, an example inheritence chain would look like:
+The test and deploy stages are slightly more complicated, as different organisations will have different workflows and techniques that they will use to deploy to different testing and production platforms. To accommodate this, we abstract the key common steps that most (if not all) test and deployment workfows willl need to implement for their particular target platforms. The main top-level methods we've identified for these are:
+
+* Test stage
+  * `test_site_setup` - Prepare a clean test site with fresh docroot etc, on a brand new URL, with the latest build deployed.
+  * `test_site_run` - Run a set of test suites and measurement tools against the test site to determine if it works, and whether there are any significant performance regressions to be noted when compared to previous test runs, send notificatoins/webhooks as appropriate.
+  * `test_site_teardown` - Clear down and release the resources that were configured during the site setup stage.
+* Deployment stage
+  * `deploy_site` - Deploys the site, typically to a pre-existing production environment. Send notifications/webhooks as appropriate.
+
+This module really only provides a framework for other modules to extend and implent the above methods for specific platforms, and so is designed more to be a dependency of a specific platform driver. Actual implementations might be based on Amazon Beanstalk, Azure EKS, Kubernetes, whatever.
+
+However, for each platform there may be more than one technique/approach to spinning up a test environment. You might deploy all the services and data natively to a fresh VM, or just mount folders into a container as volumes. The CI host may or may not have direct access to a test mySQL host to upload the test data, or it might have to feed it to a remote 'mysql' command via SSH. For this reason, it is expected that an organisation will develop their own driver package which either extends `wordpress_cd` and implements all the methods from scratch, or extend from one of the 'generic' platform packages and leverage some of the existing code/techniques.
+
+Thus, an example inheritence chain would look like:
 
  * BaseDriver (from this package `wordpress_cd`)
  * RancherDriver (from third-party `wordpress_rancher` package)
- * AcmeWidgetsRancherDriver (a custom/proprietary package, which will contain organisation-specific extensions/overrides to the common workflow)
+ * AcmeWidgetsRancherDriver (a custom/proprietary package, which will contain organisation-specific extensions/overrides to the common workflows)
 
-For example, the organisation-specific methods might override the setup and teardown methods for the DNS to use an internal nameserver for test hosts. Or include additional files in the `.ebextensions` folder of a Beanstalk application.
+For example, the organisation-specific methods might override the setup and teardown methods for the DNS to use an internal nameserver for test hosts. Or include additional files in the `.ebextensions` folder of a Beanstalk application deployment.
+
+
+## Local development
+
+They can also be a useful tool for local development. For example, I often use the `build-wp-site` script locally to quickly generate clean builds with certain plugins/themes pre-installed, and use that to kick-start a local development environment, using the build folder as the document root.
 
 
 ## Installing the scripts
@@ -167,6 +186,15 @@ A driver will be a subclass of `BaseDriver` that implements the main stages invo
 * `run_tests` - Invokes one or more internal or external profiling/testing tools against the newly created URL, gathering metrics/statistics/results for later presentation, including an overall pass/failure status.
 * `teardown` - Revoking any generated temporary SSL certificates (if necessary), removing DNS entry, purging test database and releasing any other resources used by the test host.
 
+There are a few environment variables this package expects to be set at runtime for the test stage to run:
+
+Env var | Meaning | Default
+--------|---------|--------
+WPCD_DRIVERS | Which driver packages to load (comma-seperated if multiple) | wordpress_cd
+WPCD_PLATFORM
+WPCD_TEST_DOMAIN | The domain to use for creating test hostnames (typically related to a wildcard SSL cert on the test host/proxy) | test.yourdomain.com
+WPDB_PREFIX | The table name prefix used by the test database snapshot | `wp_`
+
 TODO: Include an example within this package.
 
 The following are existing `wordress_cd` driver implementations that may serve as a useful reference or base for new ones:
@@ -235,16 +263,13 @@ deploy-wp-site -v
 
 This script will use the configured deployment driver to deploy the site.
 
-The script needs to know a few things, defined by environment variables. Typically, these variables will be provided by the CI system that's running the script. You can also use the script locally by providing the same environment variables.
+The deployment driver will attempt to identify which CI system is running and use the environment variables specific to that system if found. You can also use the script outside of a CI system (i.e. locally) by providing the same environment variables, or the following CI-independent alternatives:
 
 Env var | Description | Example value
 --------|-------------|--------------
+WPCD_JOB_ID | A unique id | `acmetest1`
 WPCD_JOB_NAME | Typically the short string name of the project/repo being deployed | `acme-widget`
 WPCD_GIT_BRANCH | Which branch this is a build of, to help determine which environment to deploy to. | `master` (or `develop`)
-WPCD_DRIVERS | Which python modules to import to register the necessary deployment drivers (may load multiple drivers, comma-seperated) | `wordpress_cd.drivers.rsync`
-WPCD_PLATFORM | Which driver id to use for testing or deployment | `rsync`
-
-The above are the default environment variables used. The deploy script will attempt to identify which CI system is running and use the environment variables specific to that system if found.
 
 
 ### The supplied `rsync` driver
@@ -264,7 +289,7 @@ Module deployments will replace the module on the server.
 Site deployments will replace the document root on the server, with a few exceptions:
 
 * The `wp-config.php` file, which may contain necessary db credentials/prefixes etc.
-* A `wp-salt.php` file, as this would break some sites which use a seperate salt file (not personally recommended).
+* A `wp-salt.php` file, as this would break some sites which use a separate salt file (not personally recommended).
 * The `wp-content/uploads` folder, containing the site's media.
 
 Other than those exception, anything else is in the document root that is not also in the build root will be destroyed, so configure with caution and keep backups to hand. If extra files are required (i.e. 'proof-of-domain' flag files etc), they need to be added to the build folder first.
