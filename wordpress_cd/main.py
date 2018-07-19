@@ -40,6 +40,7 @@ def main():
     #configfile = args.configfile[0]
 
     # Enable logging if verbosity requested
+    log_level = logging.WARNING
     if args.debug:
         log_level = logging.DEBUG
     elif args.verbose:
