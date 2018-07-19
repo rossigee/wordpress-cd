@@ -16,7 +16,7 @@ class RsyncDriver(BaseDriver):
 
     def __init__(self, args):
         _logging.debug("Initialising rsync driver")
-        super(RsyncHostDriver, self).__init__(args)
+        super(RsyncDriver, self).__init__(args)
 
         self.ssh_host = os.getenv('SSH_HOST')
         self.ssh_port = os.getenv('SSH_PORT')
