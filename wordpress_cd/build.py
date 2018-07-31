@@ -263,36 +263,21 @@ def build_site(args):
             if exitcode > 0:
                 return exitcode
 
-    # If there is a 'favicon.ico' file in the local folder, deploy that too
-    # (avoids 404s clogging up the server logs)
+    # Copy in various other optional files that should also be deployed
     os.chdir(work_dir)
-    if os.path.isfile("favicon.ico"):
-        _logger.info("Deploying custom 'favicon.ico' file to temporary build folder...")
-        dst_icofile = "{0}/wordpress/favicon.ico".format(build_dir)
+    # TODO: make this configurable...
+    files_to_include = [
+        'wp-config.php', 'favicon.ico', '.htaccess', 'robots.txt',
+    ]
+    for filename in files_to_include:
+        if not os.path.isfile(filename):
+            continue
+        _logger.info("Deploying custom '{}' file to temporary build folder...".format(filename))
+        dst_filename = "{0}/wordpress/{1}".format(build_dir, filename)
         try:
-            shutil.copyfile('favicon.ico', dst_icofile)
+            shutil.copyfile(filename, dst_filename)
         except IOError as e:
-            _logger.error("Unable to copy 'favicon.ico' into place: {0}".format(str(e)))
-            return exitcode
-
-    # If there is a '.htaccess' file in the local folder, deploy that too
-    if os.path.isfile(".htaccess"):
-        _logger.info("Deploying custom '.htaccess' file to temporary build folder...")
-        dst_file = "{0}/wordpress/.htaccess".format(build_dir)
-        try:
-            shutil.copyfile('.htaccess', dst_file)
-        except IOError as e:
-            _logger.error("Unable to copy '.htaccess' into place: {0}".format(str(e)))
-            return exitcode
-
-    # If there is a 'wp-config.php' file in the local folder, deploy that too
-    if os.path.isfile("wp-config.php"):
-        _logger.info("Deploying custom 'wp-config.php' file to temporary build folder...")
-        dst_file = "{0}/wordpress/wp-config.php".format(build_dir)
-        try:
-            shutil.copyfile(src_file, dst_file)
-        except IOError as e:
-            _logger.error("Unable to copy 'wp-config.php' into place: {0}".format(str(e)))
+            _logger.error("Unable to copy '{}' into place: {}".format(filename, str(e)))
             return exitcode
 
     # Set our file/directory permissions to be readable, to avoid perms issues later
