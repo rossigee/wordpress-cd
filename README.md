@@ -119,6 +119,13 @@ plugins:
 development-plugins:
   - https://downloads.wordpress.org/plugin/debug-tools.zip
 
+# Extra files to be included in the docroot
+extra-files:
+  - wp-config.php
+  - favicon.ico
+  - robots.txt
+  - .htaccess
+
 ```
 
 To build a document root that contains a fresh WordPress instance with that configuration:

@@ -267,11 +267,12 @@ def build_site(args):
 
     # Copy in various other optional files that should also be deployed
     os.chdir(work_dir)
-    # TODO: make this configurable...
-    files_to_include = [
+    extra_files = [
         'wp-config.php', 'favicon.ico', '.htaccess', 'robots.txt',
     ]
-    for filename in files_to_include:
+    if 'extra-files' in config:
+        extra_files = config['extra-files']
+    for filename in extra_files:
         if not os.path.isfile(filename):
             continue
         _logger.info("Deploying custom '{}' file to temporary build folder...".format(filename))
