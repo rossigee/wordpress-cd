@@ -100,6 +100,8 @@ def get_branch():
     elif 'GIT_BRANCH' in os.environ:
         _logger.debug("Detected Jenkins CI")
         return os.environ['GIT_BRANCH']
+    else:
+        return "develop"
 
 def is_develop_branch():
     return get_branch()[:7] == "develop"
