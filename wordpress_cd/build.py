@@ -144,6 +144,8 @@ def install_core(config, build_dir):
     # Clear down temporary file
     os.unlink(zipfilename)
 
+    return 0
+
 def _install_thing(url, type, dest_dir):
     os.chdir("/tmp")
 
@@ -188,6 +190,8 @@ def _install_thing(url, type, dest_dir):
     # Clear down temporary file amd folder
     os.unlink(zipfilename)
     shutil.rmtree(tmp_dir)
+
+    return 0
 
 def install_theme(theme, dest_dir):
     return _install_thing(theme, "theme", dest_dir)
