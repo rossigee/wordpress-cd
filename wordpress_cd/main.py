@@ -10,19 +10,19 @@ import logging
 _logger = logging.getLogger(__name__)
 
 def usage():
-    print "Usage:"
-    print "  build-wp-site [-v] [-d]  Build site artifacts using 'config.xml' in current directory."
-    print "  build-wp-plugin [-v] [-d]  Build plugin found in current directory."
-    print "  build-wp-theme [-v] [-d]  Build theme found in current directory."
-    print "  test-wp-site [-v] [-d]  TODO: Run tests using artifacts from build directory."
-    print "  test-wp-plugin [-v] [-d]  TODO: Run tests on plugin found in current directory."
-    print "  test-wp-theme [-v] [-d]  TODO: Run tests on theme found in current directory."
-    print "  deploy-wp-site [-v] [-d]  Deploy site artifacts to site specified via environment variables."
-    print "  deploy-wp-plugin [-v] [-d]  Deploy plugin to site specified via environment variables.."
-    print "  deploy-wp-theme [-v] [-d]  Deploy theme to site specified via environment variables."
-    print "Arguments:"
-    print "  -v  Be mildly verbose while running."
-    print "  -d  Include debugging output."
+    print("Usage:")
+    print("  build-wp-site [-v] [-d]  Build site artifacts using 'config.xml' in current directory.")
+    print("  build-wp-plugin [-v] [-d]  Build plugin found in current directory.")
+    print("  build-wp-theme [-v] [-d]  Build theme found in current directory.")
+    print("  test-wp-site [-v] [-d]  TODO: Run tests using artifacts from build directory.")
+    print("  test-wp-plugin [-v] [-d]  TODO: Run tests on plugin found in current directory.")
+    print("  test-wp-theme [-v] [-d]  TODO: Run tests on theme found in current directory.")
+    print("  deploy-wp-site [-v] [-d]  Deploy site artifacts to site specified via environment variables.")
+    print("  deploy-wp-plugin [-v] [-d]  Deploy plugin to site specified via environment variables..")
+    print("  deploy-wp-theme [-v] [-d]  Deploy theme to site specified via environment variables.")
+    print("Arguments:")
+    print("  -v  Be mildly verbose while running.")
+    print("  -d  Include debugging output.")
 
 
 def main():

@@ -85,7 +85,7 @@ class RsyncDriver(BaseDriver):
         _logging.debug("rsync exitcode: {0}".format(exitcode))
         if exitcode != 0:
             logging.error("Unable to sync new site into place. Exit code: {0}".format(exitcode))
-            print deployproc.stderr.read()
+            logging.debug(deployproc.stderr.read())
             return exitcode
 
         # Done
