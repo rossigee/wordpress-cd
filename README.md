@@ -130,7 +130,6 @@ extra-files:
 custom-directory-paths:
   content_dir: /public # is `/wp-content` by default
   plugin_dir: /modules # is `/wp-content/plugins` by default
-  upload_dir: /uploads # is `/wp-content/uploads` by default
 
 ```
 
