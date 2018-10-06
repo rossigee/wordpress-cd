@@ -128,8 +128,8 @@ extra-files:
 
 # For sites where the directory paths for the main folders have been changed
 custom-directory-paths:
-  content_dir: /public # is `/wp-content` by default
-  plugin_dir: /modules # is `/wp-content/plugins` by default
+  content-dir: /public # is `/wp-content` by default
+  plugin-dir: /modules # is `/wp-content/plugins` by default
 
 ```
 
