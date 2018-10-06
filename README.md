@@ -126,6 +126,12 @@ extra-files:
   - robots.txt
   - .htaccess
 
+# For sites where the directory paths for the main folders have been changed
+custom-directory-paths:
+  content_dir: /public # is `/wp-content` by default
+  plugin_dir: /modules # is `/wp-content/plugins` by default
+  upload_dir: /uploads # is `/wp-content/uploads` by default
+
 ```
 
 To build a document root that contains a fresh WordPress instance with that configuration:

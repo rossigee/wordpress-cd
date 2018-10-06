@@ -295,4 +295,18 @@ def build_site(args):
         for f in files:
             os.chmod(os.path.join(root, f), 0o644)
 
+    # If we have custom directorys, move things into their expected places
+    if 'custom-directory-paths' in config:
+        cdp = config['custom-directory-paths']
+        if 'plugin-dir' in cdp:
+            old_dir = "{0}/wordpress{1}".format(build_dir, "/wp-content/plugins")
+            new_dir = "{0}/wordpress{1}".format(build_dir, cdp['plugin-dir'])
+            os.rename(old_dir, new_dir)
+            _logger.info("Moved plugins folder from '/wp-content/plugins' to {0}".format(cdp['plugin-dir']))
+        if 'content-dir' in cdp:
+            old_dir = "{0}/wordpress{1}".format(build_dir, "/wp-content")
+            new_dir = "{0}/wordpress{1}".format(build_dir, cdp['content-dir'])
+            os.rename(old_dir, new_dir)
+            _logger.info("Moved content folder from '/wp-content' to {0}".format(cdp['content-dir']))
+
     _logger.info("Done")
