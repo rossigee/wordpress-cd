@@ -284,6 +284,11 @@ WPCD_JOB_NAME | Typically the short string name of the project/repo being deploy
 WPCD_GIT_BRANCH | Which branch this is a build of, to help determine which environment to deploy to. | `master` (or `develop`)
 
 
+### Common configuration
+
+If the site you are deploying to uses non-standard `WP_CONTENT_DIR` and `WP_PLUGIN_DIR` settings in it's `wp-config.php`, you need to also specify these as environment variables to the deploy stage for sites, plugins or themes.
+
+
 ### The supplied `rsync` driver
 
 This package comes with a simple `rsync` based driver, that implements the deployment methods for modules (plugins and themes) and sites. The main environment variables you need to set for a typical rsync deployment are:

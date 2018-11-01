@@ -36,6 +36,10 @@ class BaseDriver(object):
             self.target = os.environ['WPCD_JOB_NAME']
             self.job_id = os.environ['WPCD_JOB_ID']
 
+        # Does this site use non-standard dirs for uploads and plugins?
+        self.wp_content_dir = os.getenv("WP_CONTENT_DIR", "/wp-content")
+        self.wp_plugin_dir = os.getenv("WP_PLUGIN_DIR", "/wp-content/plugins")
+
         # For test stage, select a random uid to use in hostname
         self.test_site_uid = randomword(10)
         self.test_site_domain = os.getenv("WPCD_TEST_DOMAIN", "test.yourdomain.com")
