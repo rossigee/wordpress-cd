@@ -179,6 +179,14 @@ If there is a `.htaccess` file present in the current working directory when the
 If there is a `favicon.ico` file present in the current working directory when the `build-wp-site` script is run, it is included in the build.
 
 
+## Running 'gulp'
+
+The build stage for both sites and themes/plugins checks for the presence of `package.json` file and runs `npm install` if found.
+
+It also checks for a `gulpfile.js`, and runs `gulp` if found. This presumes a default gulp target has been specified.
+
+
+
 ## Testing the site
 
 In order to 'clean room' test a site, it needs to be set up from scratch with a known set of data, and a series of tests run against the site. If all tests pass, we can proceed to the deployment stage.
@@ -537,10 +545,6 @@ cd /acme-extension
 build-wp-plugin
 deploy-wp-plugin
 ```
-
-The build stage checks for the presence of `package.json` file and runs `npm install` if found.
-
-It also checks for a `gulpfile.js`, and runs `gulp` if found. This presumes a default gulp target has been specified.
 
 
 ## Building and deploying a site template

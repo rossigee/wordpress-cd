@@ -16,6 +16,27 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
+def check_and_run_gulpfile(src_dir):
+    # If there is a 'package.json' present, run 'npm install'
+    if os.path.isfile("{0}/package.json".format(src_dir)):
+        _logger.info("Found 'package.json', running 'npm install'...")
+        os.chdir(src_dir)
+        exitcode = subprocess.call(["npm", "install"])
+        if exitcode > 0:
+            _logger.error("Unable to install NodeJS packages. Exit code: {1}".format(exitcode))
+            return exitcode
+
+    # If there is a gulpfile present, run 'gulp'
+    if os.path.isfile("{0}/gulpfile.js".format(src_dir)):
+        _logger.info("Found 'gulpfile.js', running 'gulp'...")
+        os.chdir(src_dir)
+        exitcode = subprocess.call(["gulp"])
+        if exitcode > 0:
+            _logger.error("Unable to generate CSS/JS. Exit code: {1}".format(exitcode))
+            return exitcode
+
+    return 0
+
 def _build_module(module_type):
     module_id = os.getenv("JOB_BASE_NAME", os.path.basename(os.getcwd()))
     _logger.info("Building WordPress {0} {1}...".format(module_type, module_id))
@@ -54,21 +75,10 @@ def _build_module(module_type):
         return exitcode
     os.unlink(tar_file)
 
-    # If there is a 'package.json' present, run 'npm install'
-    if os.path.isfile("{0}/package.json".format(tmp_build_dir)):
-        _logger.info("Found 'package.json', running 'npm install'...")
-        exitcode = subprocess.call(["npm", "install"])
-        if exitcode > 0:
-            _logger.error("Unable to install NodeJS packages. Exit code: {1}".format(exitcode))
-            return exitcode
-
-    # If there is a '.scss' file present, run 'gulp'
-    if os.path.isfile("{0}/gulpfile.js".format(tmp_build_dir)):
-        _logger.info("Found 'gulpfile.js', running 'gulp'...")
-        exitcode = subprocess.call(["gulp"])
-        if exitcode > 0:
-            _logger.error("Unable to generate CSS/JS. Exit code: {1}".format(exitcode))
-            return exitcode
+    # If there is a gulpfile present, run 'gulp'
+    exitcode = check_and_run_gulpfile(tmp_build_dir)
+    if exitcode > 0:
+        return exitcode
 
     # Zip it on up
     zip_file = "{0}/{1}.zip".format(get_artefact_dir(work_dir), module_id)
@@ -209,7 +219,8 @@ def build_site(args):
             return 1
 
     # Clear down old build directory
-    build_dir = "{0}/build".format(os.getcwd())
+    src_dir = os.getcwd()
+    build_dir = "{0}/build".format(src_dir)
     if os.path.isdir(build_dir):
         shutil.rmtree(build_dir)
     work_dir = os.getcwd()
@@ -293,6 +304,11 @@ def build_site(args):
         _logger.info("Copying WP Super Cache driver into place...")
         dst_filename = "{0}/wordpress{1}".format(build_dir, "/wp-content/advanced-cache.php")
         shutil.copyfile(cache_filename, dst_filename)
+
+    # If there is a gulpfile present, run 'gulp'
+    exitcode = check_and_run_gulpfile(src_dir)
+    if exitcode > 0:
+        return exitcode
 
     # Set our file/directory permissions to be readable, to avoid perms issues later
     _logger.info("Resetting file/directory permissions in build folder...")
