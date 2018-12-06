@@ -287,6 +287,13 @@ def build_site(args):
             _logger.error("Unable to copy '{}' into place: {}".format(filename, str(e)))
             return exitcode
 
+    # Special handling for cache drivers...
+    cache_filename = "{0}/wordpress{1}".format(build_dir, "/wp-content/plugins/wp-super-cache/advanced-cache.php")
+    if os.path.isfile(cache_filename):
+        _logger.info("Copying WP Super Cache driver into place...")
+        dst_filename = "{0}/wordpress{1}".format(build_dir, "/wp-content/advanced-cache.php")
+        shutil.copyfile(cache_filename, dst_filename)
+
     # Set our file/directory permissions to be readable, to avoid perms issues later
     _logger.info("Resetting file/directory permissions in build folder...")
     for root, dirs, files in os.walk(build_dir):
@@ -295,7 +302,7 @@ def build_site(args):
         for f in files:
             os.chmod(os.path.join(root, f), 0o644)
 
-    # If we have custom directorys, move things into their expected places
+    # If we have custom directories, move things into their expected places
     if 'custom-directory-paths' in config:
         cdp = config['custom-directory-paths']
         if 'plugin-dir' in cdp:
