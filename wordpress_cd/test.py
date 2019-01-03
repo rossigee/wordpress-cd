@@ -1,25 +1,51 @@
 import logging
 _logger = logging.getLogger(__name__)
 
+from .job import JobHandler, get_artefact_dir
+
 import wordpress_cd.drivers as drivers
-from wordpress_cd.build import get_artefact_dir
 
-# Defines a default workflow for a 'test' stage, which assumes we will
-# fire up a new site, run tests then tear the test site down...
+
+class TestException(Exception):
+    pass
+
+
+class TestJobHandler(JobHandler):
+    def _test_handling_exceptions(self):
+        try:
+            self.test()
+            return 0
+        except Exception as e:
+            _logger.exception(str(e))
+            self._handle_exception(e)
+            return 1
+
+
+class TestSiteJobHandler(TestJobHandler):
+    def __init__(self):
+        super(TestSiteJobHandler, self).__init__("site", None)
+
+    # Defines a default workflow for a 'test' stage, which assumes we will
+    # fire up a new site, run tests then tear the test site down...
+    def test(args):
+        driver = drivers.load_driver(args)
+        _logger.info("Deploying transient copy of site using {0} driver...".format(driver))
+
+        try:
+            # Prepare the transient copy of site to be tested
+            driver.test_site_setup()
+
+            # Run the tests
+            driver.test_site_run()
+
+        finally:
+            # Garbage collect the transient site copy
+            driver.test_site_teardown()
+
+
 def test_site(args):
-    driver = drivers.load_driver(args)
-    _logger.info("Deploying transient copy of site using {0} driver...".format(driver))
-
-    try:
-        # Prepare the transient copy of site to be tested
-        driver.test_site_setup()
-
-        # Run the tests
-        driver.test_site_run()
-
-    finally:
-        # Garbage collect the transient site copy
-        driver.test_site_teardown()
+    job = TestSiteJobHandler()
+    return job._test_handling_exceptions()
 
 
 # TODO: Test stages are still to be implemented.
