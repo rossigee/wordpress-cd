@@ -42,9 +42,10 @@ def unpack_artefact():
 
 # @abstractclass
 class JobHandler:
-    def __init__(self, type, name, job_id = None):
+    def __init__(self, type, name, args, job_id = None):
         self.type = type
         self.name = name
+        self.args = args
         self.exception_handlers = []
 
         self.job_id = os.getenv("CI_JOB_ID", job_id)

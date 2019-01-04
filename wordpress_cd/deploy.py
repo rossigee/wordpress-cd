@@ -28,33 +28,35 @@ class DeployJobHandler(JobHandler):
 
 class DeployModuleJobHandler(DeployJobHandler):
     def deploy(self):
-        _logger.info("Deploying {0} '{1}' [job id: {2}]".format(self.type, self.name, self.job_id))
+        driver = drivers.load_driver(self.args)
+        _logger.debug("Deploying '{0}' {1} using {2} driver".format(self.name, self.type, driver))
+
+        # Invoke the driver's deploy method
+        driver._deploy_module(self.type)
 
 
 class DeploySiteJobHandler(DeployJobHandler):
-    def __init__(self):
-        super(DeploySiteJobHandler, self).__init__("site", None)
+    def __init__(self, args):
+        super(DeploySiteJobHandler, self).__init__("site", None, args)
 
-    # Defines a default workflow for a 'test' stage, which assumes we will
-    # fire up a new site, run tests then tear the test site down...
-    def deploy(args):
-        driver = drivers.load_driver(args)
-        _logger.info("Deploying site using {0} driver...".format(driver))
+    def deploy(self):
+        driver = drivers.load_driver(self.args)
+        _logger.debug("Deploying site using {0} driver.".format(driver))
 
         # Invoke the driver's deploy method
         driver.deploy_site()
 
 
 def deploy_site(args):
-    job = DeploySiteJobHandler()
+    job = DeploySiteJobHandler(args)
     return job._deploy_handling_exceptions()
 
 def deploy_plugin(args):
     module_id = os.getenv("JOB_BASE_NAME", os.path.basename(os.getcwd()))
-    job = DeployModuleJobHandler("plugin", module_id)
+    job = DeployModuleJobHandler("plugin", module_id, args)
     return job._deploy_handling_exceptions()
 
 def deploy_theme(args):
     module_id = os.getenv("JOB_BASE_NAME", os.path.basename(os.getcwd()))
-    job = DeployModuleJobHandler("theme", module_id)
+    job = DeployModuleJobHandler("theme", module_id, args)
     return job._deploy_handling_exceptions()

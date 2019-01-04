@@ -120,8 +120,9 @@ class BuildModuleJobHandler(BuildJobHandler):
 
 
 class BuildSiteJobHandler(BuildJobHandler):
-    def __init__(self, config):
+    def __init__(self, config, args):
         self.config = config
+        self.args = args
         super(BuildSiteJobHandler, self).__init__("site", config['id'])
 
     def build(self):
@@ -315,12 +316,12 @@ class BuildSiteJobHandler(BuildJobHandler):
 
 def build_plugin(args):
     module_id = os.getenv("JOB_BASE_NAME", os.path.basename(os.getcwd()))
-    job = BuildModuleJobHandler("plugin", module_id)
+    job = BuildModuleJobHandler("plugin", module_id, args)
     return job._build_handling_exceptions()
 
 def build_theme(args):
     module_id = os.getenv("JOB_BASE_NAME", os.path.basename(os.getcwd()))
-    job = BuildModuleJobHandler("theme", module_id)
+    job = BuildModuleJobHandler("theme", module_id, args)
     return job._build_handling_exceptions()
 
 def build_site(args):
@@ -332,5 +333,5 @@ def build_site(args):
             _logger.error(e)
             return 1
 
-    job = BuildSiteJobHandler(config)
+    job = BuildSiteJobHandler(config, args)
     return job._build_handling_exceptions()

@@ -22,13 +22,13 @@ class TestJobHandler(JobHandler):
 
 
 class TestSiteJobHandler(TestJobHandler):
-    def __init__(self):
-        super(TestSiteJobHandler, self).__init__("site", None)
+    def __init__(self, args):
+        super(TestSiteJobHandler, self).__init__("site", None, args)
 
     # Defines a default workflow for a 'test' stage, which assumes we will
     # fire up a new site, run tests then tear the test site down...
-    def test(args):
-        driver = drivers.load_driver(args)
+    def test():
+        driver = drivers.load_driver(self.args)
         _logger.info("Deploying transient copy of site using {0} driver...".format(driver))
 
         try:
@@ -44,7 +44,7 @@ class TestSiteJobHandler(TestJobHandler):
 
 
 def test_site(args):
-    job = TestSiteJobHandler()
+    job = TestSiteJobHandler(args)
     return job._test_handling_exceptions()
 
 
