@@ -27,7 +27,7 @@ class TestSiteJobHandler(TestJobHandler):
 
     # Defines a default workflow for a 'test' stage, which assumes we will
     # fire up a new site, run tests then tear the test site down...
-    def test():
+    def test(self):
         driver = drivers.load_driver(self.args)
         _logger.info("Deploying transient copy of site using {0} driver...".format(driver))
 

@@ -123,7 +123,7 @@ class BuildSiteJobHandler(BuildJobHandler):
     def __init__(self, config, args):
         self.config = config
         self.args = args
-        super(BuildSiteJobHandler, self).__init__("site", config['id'])
+        super(BuildSiteJobHandler, self).__init__("site", config['id'], args)
 
     def build(self):
         _logger.info("Building site '{0}' [job id: {1}]".format(self.name, self.job_id))
