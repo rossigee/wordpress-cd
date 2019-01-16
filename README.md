@@ -8,7 +8,7 @@ Typically, a development team working on a WordPress project need to :
 * `test` the built document root using a predetermined set of test data to ensure that the resulting website works as expected and no regressions have been introduced, using transient hosts on a test platform
 * `deploy` the new build as a new 'version' to one or more hosts on the organisations main production platform
 
-The build stage is fairly simple, as it just involves downloading a bunch of resources and arranging them into a 'document root' folder. This can be achieved be defining the themes and plugins to be assembled in a simple `config.yml` file.
+The build stage is fairly simple, as it just involves downloading a bunch of resources and arranging them into a 'document root' folder. This can be achieved be defining the themes and plugins to be assembled in a simple `build.yml` file.
 
 The test and deploy stages are slightly more complicated, as different organisations will have different workflows and techniques that they will use to deploy to different testing and production platforms. To accommodate this, we abstract the key common steps that most (if not all) test and deployment workfows willl need to implement for their particular target platforms. The main top-level methods we've identified for these are:
 
@@ -70,7 +70,7 @@ Additionally, the following command line tools will be available:
 * `test-wp-theme`
 * `deploy-wp-theme`
 
-These allow CI workflows for specific themes/plugins to be developed, so a particular theme/plugin can be applied to a given site without having to rebuild and redeploy the whole docroot. It also allows for fresh build of plugins and themes to be deployed in readiness for inclusing in newly built sites.
+These allow CI workflows for specific themes/plugins to be developed, so a particular theme/plugin can be applied to a given site without having to rebuild and redeploy the whole docroot. It also allows for fresh build of plugins and themes to be deployed as ZIP files in readiness for being included in a subsequent site build.
 
 NOTE: The `test-*` scripts for themes and plugins are just placeholders, as it's not usually practical to do end-to-end regression testing of WP plugins, and I've not come across any plugins that have their own unit tests yet.
 
@@ -85,63 +85,53 @@ TODO: Workflow example.
 
 First, create a working directory to contain your site configuration and related files.
 
-Within that folder, we define a `config.yml` site configuration file listing the main 'ingredients' we want our document root build to consist of.
+Within that folder, we define a `build.yml` site configuration file listing the main 'ingredients' (layers) we want our document root build(s) to consist of.
 
-A sample `config.yml` file might look like this:
+Most people will probably only want to build one site (document root), but the ability exists to create multiple different builds simultaneously.
+
+A sample `build.yml` file for building two document roots with different combinations of layers might look like this:
 
 ```yaml
-# Identifier string that can be used by deployment drivers if required.
-id: clubwebsite1
+# There are two site 'builds' to be built...
 
-# The main application zipfile to base a build on.
-core:
-  url: https://wordpress.org/wordpress-4.9.4.tar.gz
-  # or perhaps...
-  url: https://wordpress.org/wordpress-latest.tar.gz
+builds:
+  sitea:
+    core: https://wordpress.org/wordpress-latest.tar.gz
+    layers:
+      - common
+  siteb:
+    core: https://en-gb.wordpress.org/wordpress-5.0.3-en_GB.tar.gz
+    layers:
+      - common
+      - ecommerce
 
-# List of themes to download and build into the document root
-themes:
-  - https://downloads.wordpress.org/themes/mobile.zip
-  - https://gitlab.com/youraccount/wordpress/themes/acmeltd-theme/repository/master/archive.zip
-  - https://s3-eu-west-1.amazonaws.com/yourbucket/production/mobile-child.zip
+layers:
+  common:
+    themes:
+      - https://downloads.wordpress.org/themes/mobile.zip
+      - https://gitlab.com/youraccount/wordpress/themes/acmeltd-theme/repository/master/archive.zip
+    mu-plugins:
+      - https://downloads.wordpress.org/plugin/wp-bcrypt.zip
+    plugins:
+      - https://downloads.wordpress.org/plugin/application-passwords.zip
 
-# 'Must use' plugins
-mu-plugins:
-  - https://downloads.wordpress.org/plugin/wp-bcrypt.zip
-
-# Ordinary plugins
-plugins:
-  - https://downloads.wordpress.org/plugin/plugin-groups.zip
-  - https://downloads.wordpress.org/plugin/acme-wp-plugin.zip
-  - https://downloads.wordpress.org/plugin/another-plugin.zip
-
-# Extra plugins to be installed when branch being deployed begins with 'develop'
-development-plugins:
-  - https://downloads.wordpress.org/plugin/debug-tools.zip
-
-# Extra files to be included in the docroot
-extra-files:
-  - wp-config.php
-  - favicon.ico
-  - robots.txt
-  - .htaccess
-
-# For sites where the directory paths for the main folders have been changed
-custom-directory-paths:
-  content-dir: /public # is `/wp-content` by default
-  plugin-dir: /modules # is `/wp-content/plugins` by default
+  ecommerce:
+    plugins:
+      - https://downloads.wordpress.org/plugin/plugin-groups.zip
+      - https://downloads.wordpress.org/plugin/acme-wp-plugin.zip
+      - https://downloads.wordpress.org/plugin/another-plugin.zip
 
 ```
 
-To build a document root that contains a fresh WordPress instance with that configuration:
+To run the build:
 
 ```bash
 build-wp-site -v
 ```
 
-The resulting document root will now exist in the `build/wordpress` folder. The CI system should consider the `build` folder an artifact, as it will be expected by the subsequent testing and deployment stages.
+The resulting `build` folder will contain a folder for each build defined, and each of those will contain a `wordpress` folder with the generated document root for that build. The CI system should consider the `build` folder an artifact, as it will be expected by the subsequent testing and deployment stages.
 
-TODO: It should probably also ZIP up document root, and provide the ZIP file, last commit message and a checksum value.
+TODO: It should probably also ZIP up the document roots, and provide the ZIP files, checksum values and perhaps the last commit message.
 
 
 ### URLs in the config file
