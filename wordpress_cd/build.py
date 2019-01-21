@@ -13,6 +13,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from .job import JobHandler, get_artefact_dir
+from .notifications import *
 
 
 def get_branch():
@@ -36,11 +37,14 @@ class BuildException(Exception):
 class BuildJobHandler(JobHandler):
     def _build_handling_exceptions(self):
         try:
+            notify_start("build")
             self.build()
+            notify_success("build")
             return 0
         except Exception as e:
             _logger.exception(str(e))
             self._handle_exception(e)
+            notify_failure("build", str(e))
             return 1
 
     def check_and_run_gulpfile(self, src_dir):

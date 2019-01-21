@@ -10,6 +10,7 @@ setup(name = 'wordpress-cd',
       'wordpress_cd',
       'wordpress_cd.drivers',
       'wordpress_cd.datasets',
+      'wordpress_cd.notifications',
     ],
     data_files = [
       ('extras', ['extras/mu-autoloader.php'])

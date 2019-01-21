@@ -2,6 +2,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from .job import JobHandler, get_artefact_dir
+from .notifications import *
 
 import wordpress_cd.drivers as drivers
 
@@ -13,11 +14,14 @@ class TestException(Exception):
 class TestJobHandler(JobHandler):
     def _test_handling_exceptions(self):
         try:
+            notify_start("test")
             self.test()
+            notify_success("test")
             return 0
         except Exception as e:
             _logger.exception(str(e))
             self._handle_exception(e)
+            notify_failure("test", str(e))
             return 1
 
 

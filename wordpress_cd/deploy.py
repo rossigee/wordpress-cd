@@ -6,6 +6,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from .job import JobHandler, get_artefact_dir
+from .notifications import *
 
 import wordpress_cd.drivers as drivers
 from wordpress_cd.build import get_artefact_dir
@@ -18,11 +19,14 @@ class DeployException(Exception):
 class DeployJobHandler(JobHandler):
     def _deploy_handling_exceptions(self):
         try:
+            notify_start("deploy")
             self.deploy()
+            notify_success("deploy")
             return 0
         except Exception as e:
             _logger.exception(str(e))
             self._handle_exception(e)
+            notify_failure("deploy", str(e))
             return 1
 
 
