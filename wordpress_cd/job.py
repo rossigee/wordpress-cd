@@ -5,8 +5,6 @@ import tempfile
 import logging
 _logger = logging.getLogger(__name__)
 
-from . import notifications
-
 
 def get_artefact_dir(work_dir):
     # Determine where we're going to place the resulting ZIP file
