@@ -49,7 +49,7 @@ try:
         try:
             module = __import__(modulename)
         except ImportError as e:
-            _logger.error("Error importing module: %s" % e.__str__())
+            _logger.exception("Error importing module", e)
 
 except KeyError:
     _logger.info("No notifications configured.")
