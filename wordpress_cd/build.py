@@ -249,17 +249,17 @@ class BuildSiteJobHandler(BuildJobHandler):
                 except IOError as e:
                     raise BuildException("Unable to copy '{}' into place: {}".format(filename, str(e)))
 
-        # Special handling for cache drivers...
+        # Special handling for WP Super Cache driver...
         for build_ref in self.config['builds'].keys():
             cache_filename = "{0}/build/{1}/wordpress/wp-content/plugins/wp-super-cache/advanced-cache.php".format(src_dir, build_ref)
-            _logger.info("Copying WP Super Cache driver into place...")
             if os.path.isfile(cache_filename):
-                _logger.debug("Copying WP Super Cache driver into place for build '{0}'...".format(build_ref))
-                dst_filename = "{0}/build/{1}/wordpress/wp-content/advanced-cache.php".format(src_dir, build_ref)
-                try:
-                    shutil.copyfile(cache_filename, dst_filename)
-                except IOError as e:
-                    raise BuildException("Unable to copy '{}' into place: {}".format(filename, str(e)))
+                continue
+            _logger.info("Copying WP Super Cache driver into place for build '{0}'...".format(build_ref))
+            dst_filename = "{0}/build/{1}/wordpress/wp-content/advanced-cache.php".format(src_dir, build_ref)
+            try:
+                shutil.copyfile(cache_filename, dst_filename)
+            except IOError as e:
+                raise BuildException("Unable to copy '{}' into place: {}".format(filename, str(e)))
 
         # If there is a 'package.json' present, run 'npm install' (prep for 'gulp')
         if os.path.isfile("{0}/package.json".format(src_dir)):
@@ -321,22 +321,22 @@ class BuildSiteJobHandler(BuildJobHandler):
                 os.mkdir('wordpress/wp-content/' + dir)
 
 
-    def _fetch_thing(self, url):
+    def _fetch_thing(self, type, url):
         """Download a copy of a WordPress theme or plugin to a temporary area."""
 
         # Fetch thing
         zipfilename = "/tmp/{0}".format(os.path.basename(url))
         name = os.path.basename(url).replace(".zip", "")
-        _logger.info("Fetching WordPress {0} '{1}' from '{2}'...".format(self.type, name, url))
+        _logger.info("Fetching WordPress {0} '{1}' from '{2}'...".format(type, name, url))
         exitcode = subprocess.call(["curl", "--retry", "3", "-sSL", "-o", zipfilename, url])
         if exitcode > 0:
-            raise BuildException("Unable to download {0}. Exit code: {1}".format(self.type, exitcode))
+            raise BuildException("Unable to download {0} '{1}'. Exit code: {2}".format(type, name, exitcode))
 
     def fetch_plugin(self, url):
-        self._fetch_thing(url)
+        self._fetch_thing("plugin", url)
 
     def fetch_theme(self, url):
-        self._fetch_thing(url)
+        self._fetch_thing("theme", url)
 
     def _install_thing(self, url, dest_dirs):
         """Deploy a copy of a WordPress theme or plugin to the given folders."""
