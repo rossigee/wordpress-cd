@@ -18,7 +18,7 @@ def load_driver(args):
         try:
             module = __import__(modulename)
         except ImportError as e:
-            _logger.error("Error importing module: %s" % e.__str__())
+            _logger.exception("Error importing module '%s' for main driver" % (modulename), e)
 
     # Find the driver registered for this platform
     try:
