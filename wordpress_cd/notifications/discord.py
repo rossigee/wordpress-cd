@@ -37,7 +37,7 @@ class DiscordDriver(BaseDriver):
     def notify_stage_start(self, stage_ref):
         content = "(*{0}*) Stage started".format(stage_ref)
         self._notify(content, DISCORD_GREY)
-        logging.info("Sent stage success notification for '{0}' via Discord.".format(stage_ref))
+        logging.info("Sent stage start notification for '{0}' via Discord.".format(stage_ref))
 
     def notify_stage_success(self, stage_ref, stats = None):
         content = "(*{0}*) Stage completed successfully".format(stage_ref)
