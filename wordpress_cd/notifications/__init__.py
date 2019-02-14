@@ -49,7 +49,7 @@ try:
         try:
             module = __import__(modulename)
         except ImportError as e:
-            _logger.exception("Error importing module '%s' for notification driver" % (modulename), e)
+            _logger.exception("Error importing module '%s' for notification driver" % (modulename))
 
 except KeyError:
     _logger.info("No notifications configured.")
