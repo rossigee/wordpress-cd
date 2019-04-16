@@ -252,14 +252,14 @@ class BuildSiteJobHandler(BuildJobHandler):
         # Special handling for WP Super Cache driver...
         for build_ref in self.config['builds'].keys():
             cache_filename = "{0}/build/{1}/wordpress/wp-content/plugins/wp-super-cache/advanced-cache.php".format(src_dir, build_ref)
-            if os.path.isfile(cache_filename):
+            if not os.path.isfile(cache_filename):
                 continue
             _logger.info("Copying WP Super Cache driver into place for build '{0}'...".format(build_ref))
             dst_filename = "{0}/build/{1}/wordpress/wp-content/advanced-cache.php".format(src_dir, build_ref)
             try:
                 shutil.copyfile(cache_filename, dst_filename)
             except IOError as e:
-                raise BuildException("Unable to copy '{}' into place: {}".format(filename, str(e)))
+                raise BuildException("Unable to copy '{}' into place: {}".format(cache_filename, str(e)))
 
         # If there is a 'package.json' present, run 'npm install' (prep for 'gulp')
         if os.path.isfile("{0}/package.json".format(src_dir)):
