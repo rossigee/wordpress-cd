@@ -127,7 +127,7 @@ class BuildSiteJobHandler(BuildJobHandler):
     def __init__(self, config, args):
         self.config = config
         self.args = args
-        super(BuildSiteJobHandler, self).__init__("site", None, args)
+        BuildJobHandler.__init__(self, "site", None, args)
 
     def build(self):
         _logger.info("Building site '{0}' [job id: {1}]".format(self.name, self.job_id))
@@ -394,7 +394,7 @@ def build_site(args):
     # Read build configuration file
     with open("build.yml", 'r') as s:
         try:
-            config = yaml.load(s)
+            config = yaml.load(s, Loader=yaml.FullLoader)
         except yaml.YAMLError as e:
             _logger.error(e)
             return 1
