@@ -394,7 +394,7 @@ def build_site(args):
     # Read build configuration file
     with open("build.yml", 'r') as s:
         try:
-            config = yaml.load(s, Loader=yaml.FullLoader)
+            config = yaml.load(s)
         except yaml.YAMLError as e:
             _logger.error(e)
             return 1
