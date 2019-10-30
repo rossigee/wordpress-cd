@@ -37,7 +37,9 @@ class RsyncDriver(BaseDriver):
 
         return rsync_rsh
 
-    def _deploy_module(self, type, module_id):
+    def _deploy_module(self, type):
+        module_id = self.get_module_name()
+
         _logging.info("Deploying of '{0}' {1} branch '{2}' to host '{3}' (job id: {4})...".format(module_id, type, self.git_branch, self.ssh_host, self.job_id))
 
         # Sync new site into place, leaving config/content in place
@@ -55,7 +57,7 @@ class RsyncDriver(BaseDriver):
         exitcode = deployproc.returncode
         _logging.debug("rsync exitcode: {0}".format(exitcode))
         if exitcode != 0:
-            logging.error("Unable to sync new copy of plugin into place. Exit code: {0}".format(exitcode))
+            logging.error("Unable to sync new copy of {0} into place. Exit code: {1}".format(type, exitcode))
             return exitcode
 
         # Done
