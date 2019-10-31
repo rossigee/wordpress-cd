@@ -7,6 +7,7 @@ _logging = logging.getLogger(__name__)
 
 from wordpress_cd.drivers import driver
 from wordpress_cd.drivers.base import BaseDriver
+from wordpress_cd.job import unpack_artefact
 
 
 @driver('rsync')
