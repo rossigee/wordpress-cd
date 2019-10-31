@@ -38,18 +38,29 @@ class RsyncDriver(BaseDriver):
         return rsync_rsh
 
     def _deploy_module(self, type):
+
+        # Figure out where best to deploy it
+        if type == 'plugin':
+            path = self.wp_plugin_dir
+        elif type == 'mu-plugin':
+            path = self.wp_content_dir + "/mu-plugins"
+        elif type == 'theme':
+            path = self.wp_content_dir + "/themes"
+
         module_id = self.get_module_name()
+        pluginroot = "{0}/{1}/{2}".format(self.ssh_path, path, module_id)
+        _logger.info("Deploying '{0}' {1} branch '{2}' to '{3}:{4}' (job id: {5})...".format(module_id, type, self.git_branch, self.ssh_host, pluginroot, self.job_id))
 
-        _logging.info("Deploying of '{0}' {1} branch '{2}' to host '{3}' (job id: {4})...".format(module_id, type, self.git_branch, self.ssh_host, self.job_id))
+        # Extract module from build artefact ZIP file
+        tmp_dir = unpack_artefact()
+        os.chdir("{0}/{1}".format(tmp_dir, module_id))
 
-        # Sync new site into place, leaving config/content in place
-        pluginroot = "{0}/wp-content/{1}s/{2}".format(self.ssh_path, type, module_id)
+        # Sync new module into place
         deployargs = [
-            "rsync", "-r",
+            "rsync", "-rO", ".", "{0}@{1}:{2}".format(self.ssh_user, self.ssh_host, pluginroot)
             "-e", self._get_rsync_rsh(),
             "--exclude=.git*",
             "--delete",
-            ".", "{0}@{1}:{2}".format(self.ssh_user, self.ssh_host, pluginroot)
         ]
         deployenv = os.environ.copy()
         deployproc = subprocess.Popen(deployargs, stderr=subprocess.PIPE, env=deployenv)
@@ -61,7 +72,7 @@ class RsyncDriver(BaseDriver):
             return exitcode
 
         # Done
-        _logging.info("Deployment of '{0}' {1} branch '{2}' to host '{3}' successful (job id: {4})...".format(module_id, type, self.git_branch, self.ssh_host, self.job_id))
+        _logger.info("Deployment of '{0}' {1} branch '{2}' to '{3}:{4}' successful (job id: {5})...".format(module_id, type, self.git_branch, self.ssh_host, pluginroot, self.job_id))
         return 0
 
     def deploy_site(self):

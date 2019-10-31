@@ -13,7 +13,7 @@ def get_artefact_dir(work_dir):
     except KeyError:
         return "{0}/wpcd-artefacts".format(work_dir)
 
-# Still used?
+# Used by test/deploy stages to extract zipfiles from build stage
 def unpack_artefact():
     # Determine artefact filename and presence
     work_dir = os.getcwd()
