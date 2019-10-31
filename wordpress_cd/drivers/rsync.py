@@ -57,7 +57,7 @@ class RsyncDriver(BaseDriver):
 
         # Sync new module into place
         deployargs = [
-            "rsync", "-rO", ".", "{0}@{1}:{2}".format(self.ssh_user, self.ssh_host, pluginroot)
+            "rsync", "-rO", ".", "{0}@{1}:{2}".format(self.ssh_user, self.ssh_host, pluginroot),
             "-e", self._get_rsync_rsh(),
             "--exclude=.git*",
             "--delete",
