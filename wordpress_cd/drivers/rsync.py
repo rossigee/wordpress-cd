@@ -49,7 +49,7 @@ class RsyncDriver(BaseDriver):
 
         module_id = self.get_module_name()
         pluginroot = "{0}/{1}/{2}".format(self.ssh_path, path, module_id)
-        _logger.info("Deploying '{0}' {1} branch '{2}' to '{3}:{4}' (job id: {5})...".format(module_id, type, self.git_branch, self.ssh_host, pluginroot, self.job_id))
+        _logging.info("Deploying '{0}' {1} branch '{2}' to '{3}:{4}' (job id: {5})...".format(module_id, type, self.git_branch, self.ssh_host, pluginroot, self.job_id))
 
         # Extract module from build artefact ZIP file
         tmp_dir = unpack_artefact()
@@ -72,7 +72,7 @@ class RsyncDriver(BaseDriver):
             return exitcode
 
         # Done
-        _logger.info("Deployment of '{0}' {1} branch '{2}' to '{3}:{4}' successful (job id: {5})...".format(module_id, type, self.git_branch, self.ssh_host, pluginroot, self.job_id))
+        _logging.info("Deployment of '{0}' {1} branch '{2}' to '{3}:{4}' successful (job id: {5})...".format(module_id, type, self.git_branch, self.ssh_host, pluginroot, self.job_id))
         return 0
 
     def deploy_site(self):
