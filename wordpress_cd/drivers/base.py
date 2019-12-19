@@ -55,13 +55,13 @@ class BaseDriver(object):
         return os.path.basename(os.getcwd())
 
     def deploy_theme(self):
-        self._deploy_module("theme")
+        return self._deploy_module("theme")
 
     def deploy_plugin(self):
-        self._deploy_module("plugin")
+        return self._deploy_module("plugin")
 
     def deploy_mu_plugin(self):
-        self._deploy_module("mu_plugin")
+        return self._deploy_module("mu_plugin")
 
     def _deploy_module(self, type):
         raise NotImplementedError()

@@ -36,7 +36,7 @@ class DeployModuleJobHandler(DeployJobHandler):
         _logger.debug("Deploying '{0}' {1} using {2} driver".format(self.name, self.type, driver))
 
         # Invoke the driver's deploy method
-        driver._deploy_module(self.type)
+        return driver._deploy_module(self.type)
 
 
 class DeploySiteJobHandler(DeployJobHandler):
@@ -48,7 +48,7 @@ class DeploySiteJobHandler(DeployJobHandler):
         _logger.debug("Deploying site using {0} driver.".format(driver))
 
         # Invoke the driver's deploy method
-        driver.deploy_site()
+        return driver.deploy_site()
 
 
 def deploy_site(args):
