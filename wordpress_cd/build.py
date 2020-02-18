@@ -63,6 +63,16 @@ class BuildJobHandler(JobHandler):
             exitcode = subprocess.call(["gulp"])
             if exitcode > 0:
                 raise BuildException("Unable to generate CSS/JS. Exit code: {1}".format(exitcode))
+ 
+    def check_and_run_composer(self, src_dir):
+        # If there is a 'package.json' present, run 'npm install'
+        if os.path.isfile("{0}/composer.json".format(src_dir)):
+            _logger.info("Found 'composer.json', running 'composer update'...")
+            os.chdir(src_dir)
+            exitcode = subprocess.call(["composer", "update"])
+            if exitcode > 0:
+                raise BuildException("Unable to update composer packages. Exit code: {1}".format(exitcode))
+
 
 
 class BuildModuleJobHandler(BuildJobHandler):
@@ -103,6 +113,9 @@ class BuildModuleJobHandler(BuildJobHandler):
         if exitcode > 0:
             raise BuildException("Unable to extract files from tar file into place. Exit code: {1}".format(exitcode))
         os.unlink(tar_file)
+
+        # If there is a composer.json present, run 'composer'
+        self.check_and_run_composer(tmp_build_dir)
 
         # If there is a gulpfile present, run 'gulp'
         self.check_and_run_gulpfile(tmp_build_dir)
