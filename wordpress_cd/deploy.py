@@ -20,9 +20,9 @@ class DeployJobHandler(JobHandler):
     def _deploy_handling_exceptions(self):
         try:
             notify_start("deploy")
-            self.deploy()
+            exitcode = self.deploy()
             notify_success("deploy")
-            return 0
+            return exitcode
         except Exception as e:
             _logger.exception(str(e))
             self._handle_exception(e)
