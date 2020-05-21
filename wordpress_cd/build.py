@@ -69,7 +69,7 @@ class BuildJobHandler(JobHandler):
         if os.path.isfile("{0}/composer.json".format(src_dir)):
             _logger.info("Found 'composer.json', running 'composer update'...")
             os.chdir(src_dir)
-            exitcode = subprocess.call(["composer", "update"])
+            exitcode = subprocess.call(["composer", "update", "--prefer-dist"])
             if exitcode > 0:
                 raise BuildException("Unable to update composer packages. Exit code: {1}".format(exitcode))
 
